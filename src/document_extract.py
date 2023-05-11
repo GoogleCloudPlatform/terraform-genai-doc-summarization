@@ -22,7 +22,7 @@ def async_document_extract(
     bucket: str,
     name: str,
     timeout: int = 420,
-):
+) -> tuple(str, str):
     """Perform OCR with PDF/TIFF as source files on GCS.
 
     Original sample is here:

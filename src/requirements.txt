@@ -1,0 +1,5 @@
+functions-framework
+google-auth
+google-cloud-aiplatform==1.25.0
+google-cloud-storage
+google-cloud-vision

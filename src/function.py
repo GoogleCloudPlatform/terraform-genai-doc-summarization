@@ -62,7 +62,16 @@ class CloudEventData:
 
 # WEBHOOK FUNCTION
 @functions_framework.cloud_event
-def entrypoint(cloud_event):
+def entrypoint(cloud_event) -> dict:
+    """Entrypoint for Cloud Function
+
+    Args:
+      cloud_event (CloudEvent): an event from EventArc
+
+    Returns:
+      dictionary with 'summary' and 'output_filename' keys
+    """
+
     event_id = cloud_event["id"]
     event_type = cloud_event["type"]
     bucket = cloud_event.data["bucket"]

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Sequence, Mapping
+
 from datetime import datetime
 
 from google.cloud import bigquery
@@ -22,8 +24,8 @@ BIGQUERY_UPSERT_LOGGER = "BigQueryUpsertLogger"
 
 def write_summarization_to_table(
     project_id: str,
-    dataset_name: str,
-    table_name: str,
+    dataset_id: str,
+    table_id: str,
     bucket: str,
     filename: str,
     complete_text: str,
@@ -31,13 +33,16 @@ def write_summarization_to_table(
     summary: str,
     summary_uri: str,
     timestamp: datetime,
-):
+) -> Sequence[Mapping]:
     """Updates the BigQuery table with the document summarization
+
+    Original sample is here:
+    https://cloud.google.com/bigquery/docs/samples/bigquery-table-insert-rows-explicit-none-insert-ids
 
     Args:
       project_id (str): the Google Cloud project ID
-      dataset_name (str): the name of the BigQuery dataset
-      table_name (str): the name of the BigQuery table
+      dataset_id (str): the name of the BigQuery dataset
+      table_id (str): the name of the BigQuery table
       bucket (str): the name of the bucket with the PDF
       filename (str): path of PDF relative to bucket root
       complete_text (str): the complete text of the PDF
@@ -48,7 +53,7 @@ def write_summarization_to_table(
     """
     client = bigquery.Client()
 
-    table_id = f"{project_id}.{dataset_name}.{table_name}"
+    table_id = f"{project_id}.{dataset_id}.{table_id}"
 
     rows_to_insert = [
         {
@@ -58,15 +63,18 @@ def write_summarization_to_table(
             "summary_uri":  summary_uri,
             "summary": summary,
             "complete_text_uri": complete_text_uri,
-            "timestamp": timestamp,
+            "timestamp": timestamp.isoformat(),
         }
     ]
 
     errors = client.insert_rows_json(
-        table_id, rows_to_insert, row_ids=[None] * len(rows_to_insert)
+        table_id, rows_to_insert, row_ids=bigquery.AutoRowIDs.GENERATE_UUID
     )
     if errors != []:
         logging_client = logging.Client()
         logger = logging_client.logger(BIGQUERY_UPSERT_LOGGER)
         logger.log(f"Encountered errors while inserting rows: {errors}",
                    severity="ERROR")
+        return errors
+    
+    return []

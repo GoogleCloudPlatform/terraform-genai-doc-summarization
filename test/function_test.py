@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import datetime
-import mock
 
 from dataclasses import dataclass
 
@@ -45,6 +44,7 @@ class CloudEventMock:
       else:
         raise RuntimeError(f'Unknown key: {key}')
 
+
 MOCK_CLOUD_EVENT = CloudEventMock(
     id='7631145714375969',
     type='google.cloud.storage.object.v1.finalized',
@@ -59,9 +59,5 @@ MOCK_CLOUD_EVENT = CloudEventMock(
 
 
 def test_function_entrypoint():
-    context = mock.MagicMock()
-    context.event_id = f'system-test-{datetime.datetime.now().strftime("%m-%d-%Y-%H.%M.%S")}'
-    context.event_type = 'gcs-event'
-
-    errors = entrypoint(MOCK_CLOUD_EVENT, context)
+    errors = entrypoint(MOCK_CLOUD_EVENT)
     assert len(errors) == 0

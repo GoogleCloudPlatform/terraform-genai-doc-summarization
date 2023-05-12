@@ -16,10 +16,7 @@ import functions_framework
 
 from dataclasses import dataclass
 import datetime
-import os
-import re
 
-from google.cloud import functions
 from google.cloud import logging
 
 from .bigquery import write_summarization_to_table
@@ -31,9 +28,11 @@ from .utils import coerce_datetime_zulu, truncate_complete_text
 FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
 # TODO(erschmid): replace PROJECT_ID, MODEL_NAME, TABLE_ID, and DATASET_ID with env vars
 PROJECT_ID = 'velociraptor-16p1-dev'
+OUTPUT_BUCKET = 'velociraptor-16p1-src'
 MODEL_NAME = 'text-bison@001'
 DATASET_ID = 'academic_papers'
 TABLE_ID = 'summarizations'
+
 
 @dataclass
 class CloudEventData:
@@ -55,7 +54,7 @@ class CloudEventData:
 
 # WEBHOOK FUNCTION
 @functions_framework.cloud_event
-def entrypoint(cloud_event: dict, context: object) -> dict:
+def entrypoint(cloud_event):
     """Entrypoint for Cloud Function
 
     Args:
@@ -76,13 +75,13 @@ def entrypoint(cloud_event: dict, context: object) -> dict:
 
     logging_client = logging.Client()
     logger = logging_client.logger(FUNCTIONS_GCS_EVENT_LOGGER)
-    logger.log(f"""
-        cloud_event: id: {event_id}, event_type: {event_type}, bucket: {bucket}, file: {name}, time: {timeCreated}
-        """,
-        severity="INFO")
-
+    logger.log(f"cloud_event_id({event_id}): UPLOAD  gs://{bucket}/{name}",
+               severity="INFO")
 
     extracted_text = async_document_extract(bucket, name)
+
+    logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
+               severity="INFO")
 
     complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
     upload_to_gcs(
@@ -90,6 +89,9 @@ def entrypoint(cloud_event: dict, context: object) -> dict:
         complete_text_filename,
         extracted_text,
     )
+
+    logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD gs://{bucket}/{name}",
+               severity="INFO")
 
     # TODO(erschmid): replace truncate with better solution
     extracted_text_ = truncate_complete_text(extracted_text)
@@ -104,12 +106,18 @@ def entrypoint(cloud_event: dict, context: object) -> dict:
         location="us-central1",
     )
 
+    logger.log(f"cloud_event_id({event_id}): SUMMARY gs://{bucket}/{name}",
+               severity="INFO")
+
     output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
     upload_to_gcs(
         bucket,
         output_filename,
         summary,
     )
+
+    logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD gs://{bucket}/{name}",
+               severity="INFO")
 
     # If we have any errors, they'll be caught by the bigquery module
     errors = write_summarization_to_table(
@@ -124,5 +132,8 @@ def entrypoint(cloud_event: dict, context: object) -> dict:
         summary_uri=output_filename,
         timestamp=datetime.datetime.now()        
     )
+
+    logger.log(f"cloud_event_id({event_id}): DB_WRITE  gs://{bucket}/{name}",
+               severity="INFO")
 
     return errors

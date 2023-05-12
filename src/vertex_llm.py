@@ -14,7 +14,7 @@
 
 from google import auth
 from google.cloud import aiplatform
-from google.cloud.aiplatform import TextGenerationModel
+from vertexai.preview.language_models import TextGenerationModel
 
 import datetime
 import requests

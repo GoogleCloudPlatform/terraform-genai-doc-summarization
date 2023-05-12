@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+import mock
+
+from dataclasses import dataclass
+
+from src.main import entrypoint
+
 @dataclass
 class CloudEventDataMock:
     bucket:  str
@@ -42,10 +49,19 @@ MOCK_CLOUD_EVENT = CloudEventMock(
     id='7631145714375969',
     type='google.cloud.storage.object.v1.finalized',
     data=CloudEventDataMock(
-        bucket='velociraptor-16p1-mock-users-bucket',
-        name='9404001v1.pdf',
+        bucket='velociraptor-16p1-src',
+        name='system-test/inputs/9404003v2.pdf',
         metageneration='1',
-        timeCreated='2023-05-08T19:28:55.255Z',
-        updated='2023-05-08T19:28:55.255Z',
+        timeCreated=f"{datetime.datetime.now().isoformat()}Z",
+        updated=f"{datetime.datetime.now().isoformat()}Z",
     )
 )
+
+
+def test_function_entrypoint():
+    context = mock.MagicMock()
+    context.event_id = f'system-test-{datetime.datetime.now().strftime("%m-%d-%Y-%H.%M.%S")}'
+    context.event_type = 'gcs-event'
+
+    errors = entrypoint(MOCK_CLOUD_EVENT, context)
+    assert len(errors) == 0

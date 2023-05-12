@@ -18,10 +18,11 @@ import os
 from src.document_extract import async_document_extract
 
 BUCKET_NAME = os.environ['BUCKET']
-FILE_NAME = "pdfs/9404001v1.pdf"
+OUTPUT_BUCKET = os.environ['OUT_BUCKET']
+FILE_NAME = "9404001v1.pdf"
 
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_async_document_extract(capsys):
-    out = async_document_extract(BUCKET_NAME, FILE_NAME)
+    out = async_document_extract(BUCKET_NAME, FILE_NAME, OUTPUT_BUCKET)
     assert 'Abstract' in out

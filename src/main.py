@@ -15,7 +15,6 @@
 import functions_framework
 
 from dataclasses import dataclass
-import datetime
 
 from google.cloud import logging
 
@@ -59,38 +58,38 @@ def entrypoint(cloud_event):
 
     Args:
       cloud_event (CloudEvent): an event from EventArc
-      context (google.cloud.functions.Context): the context of this event; UNUSED
 
     Returns:
       dictionary with 'summary' and 'output_filename' keys
     """
 
     event_id = cloud_event["id"]
-    event_type = cloud_event["type"]
     bucket = cloud_event.data["bucket"]
     name = cloud_event.data["name"]
-    metageneration = cloud_event.data["metageneration"]
     timeCreated = coerce_datetime_zulu(cloud_event.data["timeCreated"])
-    updated = coerce_datetime_zulu(cloud_event.data["updated"])
+    orig_pdf_uri = f"gs://{bucket}/{name}"
 
     logging_client = logging.Client()
     logger = logging_client.logger(FUNCTIONS_GCS_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD  gs://{bucket}/{name}",
+    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
                severity="INFO")
 
-    extracted_text = async_document_extract(bucket, name)
+   
+
+    extracted_text = async_document_extract(bucket, name,
+                                            output_bucket=OUTPUT_BUCKET)
 
     logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
                severity="INFO")
 
     complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
     upload_to_gcs(
-        bucket,
+        OUTPUT_BUCKET,
         complete_text_filename,
         extracted_text,
     )
 
-    logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD gs://{bucket}/{name}",
+    logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD {orig_pdf_uri}",
                severity="INFO")
 
     # TODO(erschmid): replace truncate with better solution
@@ -106,17 +105,17 @@ def entrypoint(cloud_event):
         location="us-central1",
     )
 
-    logger.log(f"cloud_event_id({event_id}): SUMMARY gs://{bucket}/{name}",
+    logger.log(f"cloud_event_id({event_id}): SUMMARY {orig_pdf_uri}",
                severity="INFO")
 
     output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
     upload_to_gcs(
-        bucket,
+        OUTPUT_BUCKET,
         output_filename,
         summary,
     )
 
-    logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD gs://{bucket}/{name}",
+    logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD {orig_pdf_uri}",
                severity="INFO")
 
     # If we have any errors, they'll be caught by the bigquery module
@@ -130,10 +129,10 @@ def entrypoint(cloud_event):
         complete_text_uri=complete_text_filename,
         summary=summary,
         summary_uri=output_filename,
-        timestamp=datetime.datetime.now()        
+        timestamp=timeCreated       
     )
 
-    logger.log(f"cloud_event_id({event_id}): DB_WRITE  gs://{bucket}/{name}",
+    logger.log(f"cloud_event_id({event_id}): DB_WRITE  {orig_pdf_uri}",
                severity="INFO")
 
     return errors

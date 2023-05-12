@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
-
 import json
 import re
 from google.cloud import vision
@@ -23,6 +21,7 @@ from google.cloud import storage
 def async_document_extract(
     bucket: str,
     name: str,
+    output_bucket: str,
     timeout: int = 420,
 ) -> str:
     """Perform OCR with PDF/TIFF as source files on GCS.
@@ -36,7 +35,8 @@ def async_document_extract(
 
     Args:
         bucket (str): GCS URI of the bucket containing the PDF/TIFF files.
-        name (str): Name of the PDF/TIFF file.
+        name (str): name of the PDF/TIFF file.
+        output_bucket: bucket to store output in 
         timeout (int): Timeout in seconds for the request.
 
 
@@ -45,9 +45,8 @@ def async_document_extract(
     """
 
     gcs_source_uri = f'gs://{bucket}/{name}'
-    file_stem = name.split('.')
-    gcs_destination_uri = f'gs://{bucket}/{file_stem[-2]}/'
-    gcs_output_path = f'gs://{bucket}/{file_stem[-2]}/complete_text.txt'
+    prefix = "ocr"
+    gcs_destination_uri = f'gs://{output_bucket}/{prefix}/'
     mime_type = 'application/pdf'
     batch_size = 2
 

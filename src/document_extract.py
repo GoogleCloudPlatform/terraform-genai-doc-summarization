@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Tuple
+
 import json
 import re
 from google.cloud import vision
@@ -22,7 +24,7 @@ def async_document_extract(
     bucket: str,
     name: str,
     timeout: int = 420,
-) -> tuple(str, str):
+) -> Tuple[str, str]:
     """Perform OCR with PDF/TIFF as source files on GCS.
 
     Original sample is here:

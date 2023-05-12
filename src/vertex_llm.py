@@ -16,11 +16,6 @@ from google import auth
 from google.cloud import aiplatform
 from vertexai.preview.language_models import TextGenerationModel
 
-import datetime
-import requests
-from requests.adapters import HTTPAdapter
-import urllib3
-
 
 def predict_large_language_model(
     project_id: str,
@@ -38,10 +33,10 @@ def predict_large_language_model(
     Args:
       project_id (str): the Google Cloud project ID
       model_name (str): the name of the LLM model to use
-      temperature (float): TODO(nicain)
+      temperature (float): controls the randomness of predictions
       max_decode_steps (int): TODO(nicain)
-      top_p (float): TODO(nicain)
-      top_k (int): TODO(nicain)
+      top_p (float): cumulative probability of parameter highest vocabulary tokens
+      top_k (int): number of highest propbability vocabulary tokens to keep for top-k-filtering
       content (str): the text to summarize
       location (str): the Google Cloud region to run in
       tuned_model_name (str): TODO(nicain)
@@ -62,68 +57,4 @@ def predict_large_language_model(
     return response.text
 
 
-def predict_large_language_model_hack(
-    project_id: str,
-    model_name: str,
-    temperature: float,
-    max_decode_steps: int,
-    top_p: float,
-    top_k: int,
-    content: str,
-    location: str = "us-central1",
-    tuned_model_name: str = "",
-) -> str:
-    """Predict using a Large Language Model.
 
-    Args:
-      project_id (str): the Google Cloud project ID
-      model_name (str): the name of the LLM model to use
-      temperature (float): TODO(nicain)
-      max_decode_steps (int): TODO(nicain)
-      top_p (float): TODO(nicain)
-      top_k (int): TODO(nicain)
-      content (str): the text to summarize
-      location (str): the Google Cloud region to run in
-      tuned_model_name (str): TODO(nicain)
-
-    Returns:
-      The summarization of the content
-    """
-    credentials, project_id = auth.default()
-    request = auth.transport.requests.Request()
-    credentials.refresh(request)
-
-    audience = f'https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-large-language-models/locations/us-central1/endpoints/{model_name}:predict'
-    s = requests.Session()
-    retries = urllib3.util.Retry(
-      connect=10,
-      read=1,
-      backoff_factor=0.1,
-      status_forcelist=[429, 500],
-    )
-
-    headers = {}
-    headers["Content-type"] = "application/json"
-    headers["Authorization"] = f"Bearer {credentials.token}"
-
-    json_data = {
-      "instances": [
-        {"content": content},
-      ],
-      "parameters": {
-        "temperature": temperature,
-        "maxDecodeSteps": max_decode_steps,
-        "topP": top_p,
-        "topK": top_k,
-      }
-    }
-
-    s.mount('https://', HTTPAdapter(max_retries=retries))
-    response = s.post(
-        audience,
-        headers=headers,
-        timeout=datetime.timedelta(minutes=15).total_seconds(),
-        json=json_data,
-    )
-
-    return response.json()['predictions'][0]['content']

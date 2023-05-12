@@ -24,7 +24,7 @@ def async_document_extract(
     bucket: str,
     name: str,
     timeout: int = 420,
-) -> Tuple[str, str]:
+) -> str:
     """Perform OCR with PDF/TIFF as source files on GCS.
 
     Original sample is here:
@@ -41,7 +41,7 @@ def async_document_extract(
 
 
     Returns:
-        tuple: (text, gcs_output_path)
+        str: the complete text
     """
 
     gcs_source_uri = f'gs://{bucket}/{name}'
@@ -102,7 +102,4 @@ def async_document_extract(
 
         complete_text = complete_text + annotation['text']
 
-    blob = bucket.blob(gcs_output_path)
-    blob.upload_from_string(complete_text)
-
-    return (complete_text, gcs_output_path)
+    return complete_text

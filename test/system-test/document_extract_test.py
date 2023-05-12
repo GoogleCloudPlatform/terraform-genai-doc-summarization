@@ -23,5 +23,5 @@ FILE_NAME = "pdfs/9404001v1.pdf"
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_async_document_extract(capsys):
-    out, _ = async_document_extract(BUCKET_NAME, FILE_NAME)
+    out = async_document_extract(BUCKET_NAME, FILE_NAME)
     assert 'Abstract' in out

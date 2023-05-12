@@ -21,25 +21,7 @@ import re
 from document_extract import async_document_extract
 from storage import upload_to_gcs
 from vertex_llm import predict_large_language_model_hack
-
-
-def coerce_datetime_zulu(input_datetime: datetime.datetime):
-    """Force datetime into specific format.
-
-    Args:
-      input_datetime (datetime.datetime): the datetime to coerce
-
-    """
-    regex = re.compile(r"(.*)(Z$)")
-    regex_match = regex.search(input_datetime)
-    if regex_match:
-        assert input_datetime.startswith(regex_match.group(1))
-        assert input_datetime.endswith(regex_match.group(2))
-        return datetime.datetime.fromisoformat(f'{input_datetime[:-1]}+00:00')
-    raise RuntimeError(
-        'The input datetime is not in the expected format. '
-        'Please check format of the input datetime. Expected "Z" at the end'
-    )
+from utils import coerce_datetime_zulu
 
 
 @dataclass

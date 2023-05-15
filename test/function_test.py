@@ -37,20 +37,20 @@ class CloudEventMock:
     type:  str
 
     def __getitem__(self, key):
-      if key == 'id':
-        return self.id
-      elif key == 'type':
-        return self.type
-      else:
-        raise RuntimeError(f'Unknown key: {key}')
+        if key == 'id':
+            return self.id
+        elif key == 'type':
+            return self.type
+        else:
+            raise RuntimeError(f'Unknown key: {key}')
 
 
 MOCK_CLOUD_EVENT = CloudEventMock(
     id='7631145714375969',
     type='google.cloud.storage.object.v1.finalized',
     data=CloudEventDataMock(
-        bucket='velociraptor-16p1-src',
-        name='system-test/inputs/9404003v2.pdf',
+        bucket='velociraptor-16p1-mock-users-bucket',
+        name='9404001v1.pdf',
         metageneration='1',
         timeCreated=f"{datetime.datetime.now().isoformat()}Z",
         updated=f"{datetime.datetime.now().isoformat()}Z",

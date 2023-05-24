@@ -2,3 +2,12 @@ env/
 bin/
 *.pyc
 .DS_Store
+
+.terraform
+.terraform.lock.hcl
+.tmp
+terraform.tfstate
+terraform.tfstate.backup
+*.auto.tfvars
+**/debug.log
+**/tfdebug.log

@@ -1,0 +1,3 @@
+functions-framework==3.3.0
+google-auth==2.17.3
+google-cloud-aiplatform[pipelines]>=1.25.0

@@ -17,54 +17,23 @@ import json
 import os
 import re
 
-from cloudevents.http import CloudEvent
+import cloudevents.http
 import functions_framework
+import flask.wrappers
 from google.auth import default
 from google.cloud import logging
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
-from bigquery import write_summarization_to_table
-from document_extract import async_document_extract
-from storage import upload_to_gcs
-from vertex_llm import predict_large_language_model
-from utils import coerce_datetime_zulu, truncate_complete_text
+# from bigquery import write_summarization_to_table
+# from document_extract import async_document_extract
+# from storage import upload_to_gcs
+# from vertex_llm import predict_large_language_model
+# from utils import coerce_datetime_zulu, truncate_complete_text
 
 _PROJECT_ID = os.environ['PROJECT_ID']
 _LOCATION = os.environ['LOCATION']
 _CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-
-_MOCK_TEXT = '''
-The efficient-market hypothesis (EMH) is a hypothesis in financial \
-economics that states that asset prices reflect all available \
-information. A direct implication is that it is impossible to \
-"beat the market" consistently on a risk-adjusted basis since market \
-prices should only react to new information. Because the EMH is \
-formulated in terms of risk adjustment, it only makes testable \
-predictions when coupled with a particular model of risk. As a \
-result, research in financial economics since at least the 1990s has \
-focused on market anomalies, that is, deviations from specific \
-models of risk. The idea that financial market returns are difficult \
-to predict goes back to Bachelier, Mandelbrot, and Samuelson, but \
-is closely associated with Eugene Fama, in part due to his \
-influential 1970 review of the theoretical and empirical research. \
-The EMH provides the basic logic for modern risk-based theories of \
-asset prices, and frameworks such as consumption-based asset pricing \
-and intermediary asset pricing can be thought of as the combination \
-of a model of risk with the EMH. Many decades of empirical research \
-on return predictability has found mixed evidence. Research in the \
-1950s and 1960s often found a lack of predictability (e.g. Ball and \
-Brown 1968; Fama, Fisher, Jensen, and Roll 1969), yet the \
-1980s-2000s saw an explosion of discovered return predictors (e.g. \
-Rosenberg, Reid, and Lanstein 1985; Campbell and Shiller 1988; \
-Jegadeesh and Titman 1993). Since the 2010s, studies have often \
-found that return predictability has become more elusive, as \
-predictability fails to work out-of-sample (Goyal and Welch 2008), \
-or has been weakened by advances in trading technology and investor \
-learning (Chordia, Subrahmanyam, and Tong 2014; McLean and Pontiff \
-2016; Martineau 2021).
-'''.strip()
-
 _DEFAULT_PARAMETERS = {
     "temperature": .2,
     "max_output_tokens": 256,
@@ -116,17 +85,31 @@ def summarize_text(text: str, parameters: None | dict[str, int | float] = None) 
     return response.text
 
 
+def entrypoint(request: object) -> dict[str, str]:
+    
+    if isinstance(request, cloudevents.http.CloudEvent):
+        return cloud_event_entrypoint(request)
+    elif isinstance(request, flask.wrappers.Request):
+        return flask_entrypoint(request)
+    else:
+        raise Exception  # TODO raise a descriptive exception
+
+
+def flask_entrypoint(request):
+    return 'FLASK_ENTRYPOINT'
+
+
 @functions_framework.cloud_event
-def entrypoint(request: CloudEvent) -> dict[str, str]:
+def cloud_event_entrypoint(cloud_event: cloudevents.http.CloudEvent):
 
     metadata = dict(
-        event_id=request["id"],
-        event_type=request["type"],
-        bucket=request.data["bucket"],
-        name=request.data["name"],
-        metageneration=request.data["metageneration"],
-        timeCreated=coerce_datetime_zulu(request.data["timeCreated"]),
-        updated=coerce_datetime_zulu(request.data["updated"]),
+        event_id=cloud_event["id"],
+        event_type=cloud_event["type"],
+        bucket=cloud_event.data["bucket"],
+        name=cloud_event.data["name"],
+        metageneration=cloud_event.data["metageneration"],
+        timeCreated=coerce_datetime_zulu(cloud_event.data["timeCreated"]),
+        updated=coerce_datetime_zulu(cloud_event.data["updated"]),
     )
 
     try:

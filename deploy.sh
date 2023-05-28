@@ -40,9 +40,9 @@ gcloud config set project "${PROJECT_ID?}"
 gcloud --quiet auth login "${PRINCIPAL?}" --no-launch-browser
 gcloud services enable cloudresourcemanager.googleapis.com
 
-sudo docker build --build-arg BASE_IMAGE="${BASE_TERRAFORM_IMAGE?}" -t "${TERRAFORM_IMAGE?}" .
+docker build --build-arg BASE_IMAGE="${BASE_TERRAFORM_IMAGE?}" -t "${TERRAFORM_IMAGE?}" .
 
-sudo docker run \
+docker run \
   -w /app \
   -v "$(pwd)"/terraform:/app \
   "${TERRAFORM_IMAGE?}" \
@@ -53,7 +53,7 @@ sudo docker run \
   -backend-config="bucket=${TF_PLAN_STORAGE_BUCKET?}" \
   -backend-config="prefix=${PREFIX?}"
 
-sudo docker run \
+docker run \
   -w /app \
   -v "$(pwd)"/terraform:/app \
   -e GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)" \

@@ -70,6 +70,58 @@ def default_marshaller(o):
         return o.isoformat()
     return str(o)
 
+def generate_questions(text: str, parameters: None | dict[str, int | float] = None) -> str:
+    """Generate sample questions with a Large Language Model"""
+    vertexai.init(
+        project=_PROJECT_ID,
+        location=_LOCATION,
+        credentials=_CREDENTIALS
+    )
+
+    final_parameters = _DEFAULT_PARAMETERS.copy()
+    if parameters:
+      final_parameters.update(parameters)
+
+    model = TextGenerationModel.from_pretrained("text-bison@001")
+    response = model.predict(
+      f'Questions:'
+    , **final_parameters)
+    print(f"Questions generated from Model: {response.text}")
+
+    return response.text
+
+def question_answering(text: str, parameters: None | dict[str, int | float] = None) -> str:
+    """Answer the extracted questions with a Large Language Model"""
+    vertexai.init(
+        project=_PROJECT_ID,
+        location=_LOCATION,
+        credentials=_CREDENTIALS
+    )
+
+    final_parameters = _DEFAULT_PARAMETERS.copy()
+    if parameters:
+      final_parameters.update(parameters)
+
+    model = TextGenerationModel.from_pretrained("text-bison@001")
+    response = model.predict(
+      f'{text}\n'
+      'Answer the following questions one by one:\n'
+      'What is the direct implication of the efficient-market hypothesis?\n'
+      'What is the EMH formulated in terms of?\n'
+      'What is the result of research in financial economics since at least the 1990s?\n'
+      'Who is the idea that financial market returns are difficult to predict associated with?\n'
+      'What does the EMH provide the basic logic for?\n'
+      'What are some examples of return predictors?\n'
+      'What has been found since the 2010s?\n'
+      'Answer1:\n'
+      'Answer2:\n'
+      'Answer3:\n'
+      'Answer4:\n'
+      'Answer5:\n'
+      'Answer6:\n'
+      'Answer7:\n'
+    , **final_parameters)
+    print(f"Answers of extractive questions from Model: {response.text}")
 
 def summarize_text(text: str, parameters: None | dict[str, int | float] = None) -> str:
     """Summarization Example with a Large Language Model"""
@@ -109,6 +161,8 @@ def entrypoint(request):
   try:
     response = {
       'revision': os.environ['REVISION'],
+      'questions': generate_questions(_MOCK_TEXT),
+      'answers': question_answering(_MOCK_TEXT),
       'summary': summarize_text(_MOCK_TEXT),
     }
   except Exception as e:

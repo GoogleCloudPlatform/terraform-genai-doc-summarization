@@ -27,8 +27,8 @@ from .utils import coerce_datetime_zulu, truncate_complete_text
 FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
 # TODO(erschmid): replace PROJECT_ID, MODEL_NAME, TABLE_ID, and DATASET_ID
 # with env vars
-PROJECT_ID = 'velociraptor-16p1-dev'
-OUTPUT_BUCKET = 'velociraptor-16p1-src'
+PROJECT_ID = 'velociraptor-16p2-dev'
+OUTPUT_BUCKET = 'velociraptor-16p2-src'
 MODEL_NAME = 'text-bison@001'
 DATASET_ID = 'academic_papers'
 TABLE_ID = 'summarizations'

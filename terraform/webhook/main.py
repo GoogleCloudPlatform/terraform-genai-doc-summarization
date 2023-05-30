@@ -3,6 +3,7 @@ import os
 import datetime
 import re
 from typing import Union
+import pandas as pd
 
 from google.auth import default
 import vertexai

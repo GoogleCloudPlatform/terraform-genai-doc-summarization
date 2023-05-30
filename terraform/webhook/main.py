@@ -201,36 +201,43 @@ def summarize_text(text: str, parameters: None | dict[str, int | float] = None) 
 
     return response.text
 
-
-@functions_framework.cloud_event
+# WEBHOOK FUNCTION
+# @functions_framework.cloud_request
 def entrypoint(request):
+    """Entrypoint for Cloud Function"""
 
-  metadata = dict(
-    event_id = request["id"],
-    event_type = request["type"],
-    bucket = request.data["bucket"],
-    name = request.data["name"],
-    metageneration = request.data["metageneration"],
-    timeCreated = coerce_datetime_zulu(request.data["timeCreated"]),
-    updated = coerce_datetime_zulu(request.data["updated"]),
-  )
+    print(request.get_json())
+    return "HelloWorld!!!!"
 
-  try:
-    response = {
-      'revision': os.environ['REVISION'],
-      'questions': generate_questions(_MOCK_TEXT),
-      'answers': question_answering(_MOCK_TEXT),
-      'tuning': tune_model(_MOCK_DATA),
-      'summary': summarize_text(_MOCK_TEXT),
-    }
-  except Exception as e:
-    response = {
-      'exception': str(e),
-    }
-  response['metadata'] = metadata
+# @functions_framework.cloud_event
+# def entrypoint(request):
+
+#   metadata = dict(
+#     event_id = request["id"],
+#     event_type = request["type"],
+#     bucket = request.data["bucket"],
+#     name = request.data["name"],
+#     metageneration = request.data["metageneration"],
+#     timeCreated = coerce_datetime_zulu(request.data["timeCreated"]),
+#     updated = coerce_datetime_zulu(request.data["updated"]),
+#   )
+
+#   try:
+#     response = {
+#       'revision': os.environ['REVISION'],
+#       'questions': generate_questions(_MOCK_TEXT),
+#       'answers': question_answering(_MOCK_TEXT),
+#       'tuning': tune_model(_MOCK_DATA),
+#       'summary': summarize_text(_MOCK_TEXT),
+#     }
+#   except Exception as e:
+#     response = {
+#       'exception': str(e),
+#     }
+#   response['metadata'] = metadata
 
 
   
-  print(json.dumps({'response': response}, indent=2, sort_keys=True, default=default_marshaller))
+#   print(json.dumps({'response': response}, indent=2, sort_keys=True, default=default_marshaller))
 
-  return response
+#   return response

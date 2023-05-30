@@ -53,85 +53,9 @@ class CloudEventData:
 
 
 # WEBHOOK FUNCTION
-@functions_framework.cloud_event
-def entrypoint(cloud_event):
-    """Entrypoint for Cloud Function
+# @functions_framework.cloud_request
+def entrypoint(request):
+    """Entrypoint for Cloud Function"""
 
-    Args:
-      cloud_event (CloudEvent): an event from EventArc
-
-    Returns:
-      dictionary with 'summary' and 'output_filename' keys
-    """
-
-    event_id = cloud_event["id"]
-    bucket = cloud_event.data["bucket"]
-    name = cloud_event.data["name"]
-    timeCreated = coerce_datetime_zulu(cloud_event.data["timeCreated"])
-    orig_pdf_uri = f"gs://{bucket}/{name}"
-
-    logging_client = logging.Client()
-    logger = logging_client.logger(FUNCTIONS_GCS_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
-               severity="INFO")
-
-    extracted_text = async_document_extract(bucket, name,
-                                            output_bucket=OUTPUT_BUCKET)
-
-    logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
-               severity="INFO")
-
-    complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
-    upload_to_gcs(
-        OUTPUT_BUCKET,
-        complete_text_filename,
-        extracted_text,
-    )
-
-    logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD {orig_pdf_uri}",
-               severity="INFO")
-
-    # TODO(erschmid): replace truncate with better solution
-    extracted_text_ = truncate_complete_text(extracted_text)
-    summary = predict_large_language_model(
-        project_id=PROJECT_ID,
-        model_name=MODEL_NAME,
-        temperature=0.2,
-        max_decode_steps=1024,
-        top_p=0.8,
-        top_k=40,
-        content=f'Summarize:\n{extracted_text_}',
-        location="us-central1",
-    )
-
-    logger.log(f"cloud_event_id({event_id}): SUMMARY {orig_pdf_uri}",
-               severity="INFO")
-
-    output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
-    upload_to_gcs(
-        OUTPUT_BUCKET,
-        output_filename,
-        summary,
-    )
-
-    logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD {orig_pdf_uri}",
-               severity="INFO")
-
-    # If we have any errors, they'll be caught by the bigquery module
-    errors = write_summarization_to_table(
-        project_id=PROJECT_ID,
-        dataset_id=DATASET_ID,
-        table_id=TABLE_ID,
-        bucket=bucket,
-        filename=output_filename,
-        complete_text=extracted_text,
-        complete_text_uri=complete_text_filename,
-        summary=summary,
-        summary_uri=output_filename,
-        timestamp=timeCreated       
-    )
-
-    logger.log(f"cloud_event_id({event_id}): DB_WRITE  {orig_pdf_uri}",
-               severity="INFO")
-
-    return errors
+    print(request.get_json())
+    return "HelloWorld!!!!"

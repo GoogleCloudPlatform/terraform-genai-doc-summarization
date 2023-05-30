@@ -255,27 +255,3 @@ resource "google_project_iam_member" "run_invoker" {
     google_project_service.iam
   ]
 }
-
-resource "google_eventarc_trigger" "summarization" {
-  project    = var.project_id
-  name = "terraformdev"
-  location = var.region
-  matching_criteria {
-      attribute = "type"
-      value = "google.cloud.storage.object.v1.finalized"
-  }
-  matching_criteria {
-    attribute = "bucket"
-    value     = google_storage_bucket.uploads.name
-  }
-  destination {
-      cloud_run_service {
-          service = google_cloudfunctions2_function.webhook.name
-          region = var.region
-      }
-  }
-  service_account = google_service_account.upload_trigger.email
-  depends_on = [
-    google_project_iam_member.event_receiver
-  ]
-}

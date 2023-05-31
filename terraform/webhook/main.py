@@ -45,23 +45,26 @@ learning (Chordia, Subrahmanyam, and Tong 2014; McLean and Pontiff \
 2016; Martineau 2021).
 '''.strip()
 
-_MOCK_DATA = [
-  {'input_text': 'What has been found since the 2010s?',
-    'output_text': 'return predictability has become more elusive'},
-  {'input_text': 'What is the efficient-market hypothesis?',
-    'output_text': 'it is impossible to "beat the market" consistently on a risk-adjusted basis'},
-  {'input_text': 'What is the direct implication of the efficient-market hypothesis?',
-    'output_text': 'risk adjustment'},
-  {'input_text': 'What is the EMH formulated in terms of?',
-    'output_text': 'market anomalies'},
-  {'input_text': 'What is the result of research in financial economics since at least the 1990s?',
-    'output_text': 'Eugene Fama'},
-  {'input_text': 'Who is the idea that financial market returns are difficult to predict associated with?',
-    'output_text': 'modern risk-based theories of asset prices'},
-  {'input_text': 'What does the EMH provide the basic logic for?',
-    'output_text': 'Rosenberg, Reid, and Lanstein 1985; Campbell and Shiller 1988; Jegadeesh and Titman 1993'},
-  {'input_text': 'What are some examples of return predictors?',
-    'output_text': 'return predictability has become more elusive'}]
+_MOCK_DATA = [{'input_text': 'What has research in financial economics since at least the 1990s focused on?',
+  'output_text': 'market anomalies'},
+ {'input_text': 'What is the direct implication of the efficient-market hypothesis?',
+  'output_text': 'it is impossible to "beat the market" consistently on a risk-adjusted basis'},
+ {'input_text': 'What is the EMH formulated in terms of?',
+  'output_text': 'risk adjustment'},
+ {'input_text': 'What is the result of research in financial economics since at least the 1990s?',
+  'output_text': 'market anomalies'},
+ {'input_text': 'Who is the idea that financial market returns are difficult to predict associated with?',
+  'output_text': 'Eugene Fama'},
+ {'input_text': 'What does the EMH provide the basic logic for?',
+  'output_text': 'modern risk-based theories of asset prices'},
+ {'input_text': 'What are some examples of return predictors?',
+  'output_text': 'Rosenberg, Reid, and Lanstein 1985; Campbell and Shiller 1988; Jegadeesh and Titman 1993'},
+ {'input_text': 'What has been found since the 2010s?',
+  'output_text': 'return predictability has become more elusive'},
+ {'input_text': 'Who is Eugene Fama?',
+  'output_text': 'an influential 1970 review of the theoretical and empirical research'},
+ {'input_text': 'Who is closely associated with the efficient-market hypothesis?',
+  'output_text': 'Eugene Fama'}]
 
 _DEFAULT_PARAMETERS = {
     "temperature": .2,
@@ -105,7 +108,7 @@ def generate_questions(text: str, parameters: None | dict[str, int | float] = No
 
     model = TextGenerationModel.from_pretrained("text-bison@001")
     response = model.predict(
-      f'Questions:'
+      f'Extract at least 10 Questions based on the following article:'
     , **final_parameters)
     print(f"Questions generated from Model: {response.text}")
 
@@ -135,6 +138,9 @@ def question_answering(text: str, parameters: None | dict[str, int | float] = No
       'What does the EMH provide the basic logic for?\n'
       'What are some examples of return predictors?\n'
       'What has been found since the 2010s?\n'
+      'Who is Eugene Fama?\n'
+      'Who is closely associated with the efficient-market hypothesis?\n'
+      'What has research in financial economics since at least the 1990s focused on?\n'
       'Answer1:\n'
       'Answer2:\n'
       'Answer3:\n'
@@ -142,43 +148,56 @@ def question_answering(text: str, parameters: None | dict[str, int | float] = No
       'Answer5:\n'
       'Answer6:\n'
       'Answer7:\n'
+      'Answer8:\n'
+      'Answer9:\n'
+      'Answer10:\n'
     , **final_parameters)
     print(f"Answers of extractive questions from Model: {response.text}")
 
-
-def tune_model(
+credentials, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+def tuning(
     project_id: str,
     location: str,
-    training_data: Union[pd.DataFrame, str],
+    training_data: pd.DataFrame | str,
     train_steps: int = 10,
-):
-  """Prompt-tune a new model, based on a prompt-response data.
+) -> None:
+    """Tune a new model, based on a prompt-response data.
 
-  "training_data" can be either the GCS URI of a file formatted in JSONL format
-  (for example: training_data=f'gs://{bucket}/{filename}.jsonl'), or a pandas
-  DataFrame. Each training example should be JSONL record with two keys, for
-  example:
-    {
-      "input_text": <input prompt>,
-      "output_text": <associated output>
-    },
-  or the pandas DataFame should contain two columns:
-    ['input_text', 'output_text']
-  with rows for each training example.
+    "training_data" can be either the GCS URI of a file formatted in JSONL format
+    (for example: training_data=f'gs://{bucket}/{filename}.jsonl'), or a pandas
+    DataFrame. Each training example should be JSONL record with two keys, for
+    example:
+      {
+        "input_text": <input prompt>,
+        "output_text": <associated output>
+      },
+    or the pandas DataFame should contain two columns:
+      ['input_text', 'output_text']
+    with rows for each training example.
 
-  Args:
-    project_id: GCP Project ID, used to initialize aiplatform
-    location: GCP Region, used to initialize aiplatform
-    training_data: GCS URI of training file or pandas dataframe of training data
-    train_steps: Number of training steps to use when tuning the model.
-  """
-  vertexai.init(project=project_id, location=location)
-  model = TextGenerationModel.from_pretrained("google/text-bison-001")
+    Args:
+      project_id: GCP Project ID, used to initialize vertexai
+      location: GCP Region, used to initialize vertexai
+      training_data: GCS URI of jsonl file or pandas dataframe of training data
+      train_steps: Number of training steps to use when tuning the model.
+    """
+    vertexai.init(
+        project=project_id,
+        location=location,
+        credentials=credentials
+    )
+    model = TextGenerationModel.from_pretrained("google/text-bison@001")
 
-  model.tune_model(
-      training_data=training_data,
-      train_steps=train_steps,
-  )
+    model.tune_model(
+        training_data=training_data,
+        # Optional:
+        train_steps=train_steps,
+        tuning_job_location="europe-west4",  # Only supported in europe-west4 for Public Preview
+        tuned_model_location=location,
+    )
+
+    print(model._job.status)
+    return model
 
 def summarize_text(text: str, parameters: None | dict[str, int | float] = None) -> str:
     """Summarization Example with a Large Language Model"""

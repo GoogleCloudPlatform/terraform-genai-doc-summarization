@@ -16,6 +16,16 @@ resource "google_project_service" "serviceusage" {
   disable_dependent_services = true
 }
 
+resource "google_project_service" "vision" {
+  service = "vision.googleapis.com"
+  project            = var.project_id
+  disable_on_destroy = false
+  disable_dependent_services = true
+  depends_on = [
+    google_project_service.serviceusage
+  ]
+}
+
 resource "google_project_service" "cloudfunctions" {
   service = "cloudfunctions.googleapis.com"
   project            = var.project_id
@@ -159,6 +169,15 @@ resource "google_project_iam_member" "data_editor" {
   ]
 }
 
+resource "google_project_iam_member" "artifactregistry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member = "serviceAccount:${google_service_account.webhook.email}"
+  depends_on = [
+    google_project_service.iam
+  ]
+}
+
 resource "google_cloudfunctions2_function" "webhook" {
   project = var.project_id
   name        = var.webhook_name
@@ -197,6 +216,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     google_project_service.artifactregistry,
     google_project_service.cloudbuild,
     google_project_service.run,
+    google_project_service.vision,
   ]
 }
 
@@ -294,6 +314,15 @@ resource "google_project_iam_member" "run_invoker" {
   ]
 }
 
+resource "google_project_iam_member" "pubsub_publisher" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  member = "serviceAccount:service-${data.google_project.project.number}@gs-project-accounts.iam.gserviceaccount.com"
+  depends_on = [
+    google_project_service.iam
+  ]
+}
+  
 resource "google_eventarc_trigger" "summarization" {
   project    = var.project_id
   name = "terraformdev"
@@ -314,6 +343,8 @@ resource "google_eventarc_trigger" "summarization" {
   }
   service_account = google_service_account.upload_trigger.email
   depends_on = [
-    google_project_iam_member.event_receiver
+    google_project_iam_member.event_receiver,
+    google_project_iam_member.run_invoker,
+    google_project_iam_member.pubsub_publisher,
   ]
 }

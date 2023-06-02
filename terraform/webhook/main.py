@@ -25,35 +25,28 @@ from google.cloud import logging
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
-# from bigquery import write_summarization_to_table
-# from document_extract import async_document_extract
-# from storage import upload_to_gcs
-# from vertex_llm import predict_large_language_model
-# from utils import coerce_datetime_zulu, truncate_complete_text
+_FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
+_FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
+
+from bigquery import write_summarization_to_table
+from document_extract import async_document_extract
+from storage import upload_to_gcs
+from vertex_llm import predict_large_language_model
+from utils import coerce_datetime_zulu, truncate_complete_text
 
 _PROJECT_ID = os.environ['PROJECT_ID']
+_OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 _LOCATION = os.environ['LOCATION']
 _CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+_MODEL_NAME = 'text-bison@001'
 _DEFAULT_PARAMETERS = {
     "temperature": .2,
     "max_output_tokens": 256,
     "top_p": .95,
     "top_k": 40,
 }
-
-
-def coerce_datetime_zulu(input_datetime: str) -> datetime.datetime:
-
-    regex = re.compile(r"(.*)(Z$)")
-    regex_match = regex.search(input_datetime)
-    if regex_match:
-        assert input_datetime.startswith(regex_match.group(1))
-        assert input_datetime.endswith(regex_match.group(2))
-        return datetime.datetime.fromisoformat(f'{input_datetime[:-1]}+00:00')
-    raise RuntimeError(
-        'The input datetime is not in the expected format. '
-        'Please check the format of the input datetime. Expected "Z" at the end'
-    )
+_DATASET_ID = os.environ['DATASET_ID']
+_TABLE_ID = os.environ['TABLE_ID']
 
 
 def default_marshaller(o: object) -> str:
@@ -86,43 +79,125 @@ def summarize_text(text: str, parameters: None | dict[str, int | float] = None) 
 
 
 def entrypoint(request: object) -> dict[str, str]:
-    
-    if isinstance(request, cloudevents.http.CloudEvent):
-        return cloud_event_entrypoint(request)
-    elif isinstance(request, flask.wrappers.Request):
-        return flask_entrypoint(request)
+
+    data = request.get_json()
+    if data.get('kind', None) == 'storage#object':
+        return cloud_event_entrypoint(
+            name = data['name'],
+            event_id = data["id"],
+            bucket = data["bucket"],
+            time_created = coerce_datetime_zulu(data["timeCreated"]),
+        )
     else:
-        raise Exception  # TODO raise a descriptive exception
+        return summarization_entrypoint(
+            name=data['name'],
+            extracted_text=data['text'],
+            time_created=datetime.datetime.now(datetime.timezone.utc),
+            event_id='CURL_TRIGGER'
+        )
 
 
-def flask_entrypoint(request):
-    return 'FLASK_ENTRYPOINT'
-
-
-@functions_framework.cloud_event
-def cloud_event_entrypoint(cloud_event: cloudevents.http.CloudEvent):
-
-    metadata = dict(
-        event_id=cloud_event["id"],
-        event_type=cloud_event["type"],
-        bucket=cloud_event.data["bucket"],
-        name=cloud_event.data["name"],
-        metageneration=cloud_event.data["metageneration"],
-        timeCreated=coerce_datetime_zulu(cloud_event.data["timeCreated"]),
-        updated=coerce_datetime_zulu(cloud_event.data["updated"]),
+def cloud_event_entrypoint(event_id, bucket, name, time_created):
+    
+    orig_pdf_uri = f"gs://{bucket}/{name}"
+    logging_client = logging.Client()
+    logger = logging_client.logger(_FUNCTIONS_GCS_EVENT_LOGGER)
+    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
+               severity="INFO")
+    
+    extracted_text = async_document_extract(bucket, name, output_bucket=_OUTPUT_BUCKET)
+    logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
+               severity="INFO")
+    
+    return summarization_entrypoint(
+        name,
+        extracted_text,
+        time_created=time_created,
+        event_id=event_id,
+        bucket=bucket,
     )
 
-    try:
-        response = {
-            'revision': os.environ['REVISION'],
-            'summary': summarize_text(_MOCK_TEXT),
-        }
-    except Exception as e:
-        response = {
-            'exception': str(e),
-        }
-    response['metadata'] = metadata
 
-    print(json.dumps({'response': response}, indent=2, sort_keys=True, default=default_marshaller))
+def summarization_entrypoint(
+        name,
+        extracted_text,
+        time_created,
+        bucket=None,
+        event_id=None,
+    ):
+    logging_client = logging.Client()
+    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
 
-    return response
+    complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
+    upload_to_gcs(
+        _OUTPUT_BUCKET,
+        complete_text_filename,
+        extracted_text,
+        _CREDENTIALS,
+    )
+    logger.log(f"cloud_event_id({event_id}): FULLTEXT_UPLOAD {complete_text_filename}",
+               severity="INFO")
+    
+
+    extracted_text_trunc = truncate_complete_text(extracted_text)
+    summary = predict_large_language_model(
+        project_id=_PROJECT_ID,
+        model_name=_MODEL_NAME,
+        temperature=0.2,
+        max_decode_steps=1024,
+        top_p=0.8,
+        top_k=40,
+        content=f'Summarize:\n{extracted_text_trunc}',
+        location="us-central1",
+        credentials=_CREDENTIALS,
+    )
+    logger.log(f"cloud_event_id({event_id}): SUMMARY_COMPLETE",
+            severity="INFO")
+
+
+    output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
+    upload_to_gcs(
+        _OUTPUT_BUCKET,
+        output_filename,
+        summary,
+        _CREDENTIALS,
+    )
+    logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD {upload_to_gcs}",
+               severity="INFO")
+
+    # If we have any errors, they'll be caught by the bigquery module
+    errors = write_summarization_to_table(
+        project_id=_PROJECT_ID,
+        dataset_id=_DATASET_ID,
+        table_id=_TABLE_ID,
+        bucket=bucket,
+        filename=output_filename,
+        complete_text=extracted_text,
+        complete_text_uri=complete_text_filename,
+        summary=summary,
+        summary_uri=output_filename,
+        timestamp=time_created,
+        credentials=_CREDENTIALS,
+    )
+
+    logger.log(f"cloud_event_id({event_id}): DB_WRITE",
+               severity="INFO")
+
+    return errors
+
+
+    return {'summary': summary}
+    # try:
+    #     response = {
+    #         'revision': os.environ['REVISION'],
+    #         'summary': summarize_text(_MOCK_TEXT),
+    #     }
+    # except Exception as e:
+    #     response = {
+    #         'exception': str(e),
+    #     }
+    # response['metadata'] = metadata
+
+    # print(json.dumps({'response': response}, indent=2, sort_keys=True, default=default_marshaller))
+
+    # return response

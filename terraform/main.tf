@@ -132,6 +132,33 @@ resource "google_project_iam_member" "aiplatform_user" {
   ]
 }
 
+resource "google_project_iam_member" "storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member = "serviceAccount:${google_service_account.webhook.email}"
+  depends_on = [
+    google_project_service.iam
+  ]
+}
+
+resource "google_project_iam_member" "log_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member = "serviceAccount:${google_service_account.webhook.email}"
+  depends_on = [
+    google_project_service.iam
+  ]
+}
+
+resource "google_project_iam_member" "data_editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member = "serviceAccount:${google_service_account.webhook.email}"
+  depends_on = [
+    google_project_service.iam
+  ]
+}
+
 resource "google_cloudfunctions2_function" "webhook" {
   project = var.project_id
   name        = var.webhook_name
@@ -161,6 +188,9 @@ resource "google_cloudfunctions2_function" "webhook" {
       PRINCIPAL = var.principal
       LOCATION = var.region
       REVISION = var.revision
+      OUTPUT_BUCKET = google_storage_bucket.output.name
+      DATASET_ID = google_bigquery_dataset.default.dataset_id
+      TABLE_ID = google_bigquery_table.default.table_id
     }
   }
   depends_on = [
@@ -224,6 +254,14 @@ EOF
 resource "google_storage_bucket" "uploads" {
   project    = var.project_id
   name          = "${var.project_id}_uploads"
+  location      = var.region
+  force_destroy = true
+  uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket" "output" {
+  project    = var.project_id
+  name          = "${var.project_id}_output"
   location      = var.region
   force_destroy = true
   uniform_bucket_level_access = true

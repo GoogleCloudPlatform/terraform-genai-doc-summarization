@@ -19,12 +19,12 @@ from dataclasses import dataclass
 from google.cloud import logging
 
 from .bigquery import write_summarization_to_table
-from .document_extract import async_document_extract
+# from .document_extract import async_document_extract
 from .storage import upload_to_gcs
 from .vertex_llm import predict_large_language_model
 from .utils import coerce_datetime_zulu, truncate_complete_text
 
-FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
+# FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
 # TODO(erschmid): replace PROJECT_ID, MODEL_NAME, TABLE_ID, and DATASET_ID
 # with env vars
 PROJECT_ID = 'velociraptor-16p1-dev'
@@ -64,48 +64,47 @@ def entrypoint(cloud_event):
       dictionary with 'summary' and 'output_filename' keys
     """
 
-    event_id = cloud_event["id"]
-    bucket = cloud_event.data["bucket"]
-    name = cloud_event.data["name"]
-    timeCreated = coerce_datetime_zulu(cloud_event.data["timeCreated"])
-    orig_pdf_uri = f"gs://{bucket}/{name}"
+    # event_id = cloud_event["id"]
+    # bucket = cloud_event.data["bucket"]
+    # name = cloud_event.data["name"]
+    # timeCreated = coerce_datetime_zulu(cloud_event.data["timeCreated"])
+    # orig_pdf_uri = f"gs://{bucket}/{name}"
 
-    logging_client = logging.Client()
-    logger = logging_client.logger(FUNCTIONS_GCS_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
-               severity="INFO")
+    # logging_client = logging.Client()
+    # logger = logging_client.logger(FUNCTIONS_GCS_EVENT_LOGGER)
+    # logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
+    #            severity="INFO")
 
-    extracted_text = async_document_extract(bucket, name,
-                                            output_bucket=OUTPUT_BUCKET)
+    # extracted_text = async_document_extract(bucket, name, output_bucket=OUTPUT_BUCKET)
 
-    logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
-               severity="INFO")
+    # logger.log(f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}",
+    #            severity="INFO")
 
-    complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
-    upload_to_gcs(
-        OUTPUT_BUCKET,
-        complete_text_filename,
-        extracted_text,
-    )
+    # complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
+    # upload_to_gcs(
+    #     OUTPUT_BUCKET,
+    #     complete_text_filename,
+    #     extracted_text,
+    # )
 
-    logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD {orig_pdf_uri}",
-               severity="INFO")
+    # logger.log(f"cloud_event_id({event_id}): OCR_UPLOAD {orig_pdf_uri}",
+    #            severity="INFO")
 
-    # TODO(erschmid): replace truncate with better solution
-    extracted_text_ = truncate_complete_text(extracted_text)
-    summary = predict_large_language_model(
-        project_id=PROJECT_ID,
-        model_name=MODEL_NAME,
-        temperature=0.2,
-        max_decode_steps=1024,
-        top_p=0.8,
-        top_k=40,
-        content=f'Summarize:\n{extracted_text_}',
-        location="us-central1",
-    )
+    # # TODO(erschmid): replace truncate with better solution
+    # extracted_text_ = truncate_complete_text(extracted_text)
+    # summary = predict_large_language_model(
+    #     project_id=PROJECT_ID,
+    #     model_name=MODEL_NAME,
+    #     temperature=0.2,
+    #     max_decode_steps=1024,
+    #     top_p=0.8,
+    #     top_k=40,
+    #     content=f'Summarize:\n{extracted_text_}',
+    #     location="us-central1",
+    # )
 
-    logger.log(f"cloud_event_id({event_id}): SUMMARY {orig_pdf_uri}",
-               severity="INFO")
+    # logger.log(f"cloud_event_id({event_id}): SUMMARY {orig_pdf_uri}",
+    #            severity="INFO")
 
     output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
     upload_to_gcs(

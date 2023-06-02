@@ -13,9 +13,10 @@
 # limitations under the License.
 
 from google.cloud import storage
+from google.oauth2.credentials import Credentials
 
 
-def upload_to_gcs(bucket: str, name: str, data: str):
+def upload_to_gcs(bucket: str, name: str, data: str, credentials: Credentials):
     """Upload a string to Google Cloud Storage bucket.
 
     Args:
@@ -24,7 +25,7 @@ def upload_to_gcs(bucket: str, name: str, data: str):
       data (str): the data to store
 
     """
-    client = storage.Client()
+    client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(bucket)
     blob = bucket.blob(name)
     blob.upload_from_string(data)

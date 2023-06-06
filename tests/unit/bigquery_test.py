@@ -78,8 +78,10 @@ def test_write_summarization_bad_inputs():
 
 def test_write_summarization_no_row_data():
     # Act
-    errors = write_summarization_to_table('project', 'dataset', 'table',                                  
-                                         '', '', '', '', '', '', None)
+    errors = write_summarization_to_table('project',
+                                          'dataset',
+                                          'table',                                  
+                                          '', '', '', '', '', '', None)
 
     # Assert
     assert len(errors) == 1

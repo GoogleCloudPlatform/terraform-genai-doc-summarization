@@ -16,22 +16,23 @@ import backoff
 import datetime
 import os
 
+from google.auth import default
 from google.cloud import storage
+from storage import upload_to_gcs
 
-from src.storage import upload_to_gcs
-
-BUCKET_NAME = os.environ["BUCKET"]
-FILE_NAME = "system-test/fake.text"
+_BUCKET_NAME = os.environ["BUCKET"]
+_FILE_NAME = "system-test/fake.text"
+_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_upload_to_gcs():
     want = datetime.datetime.now().isoformat()
 
-    upload_to_gcs(bucket=BUCKET_NAME, name=FILE_NAME, data=want)
+    upload_to_gcs(bucket=_BUCKET_NAME, name=_FILE_NAME, data=want, credentials=_CREDENTIALS)
 
     client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    blob = bucket.blob(FILE_NAME)
+    bucket = client.bucket(_BUCKET_NAME)
+    blob = bucket.blob(_FILE_NAME)
     got = str(blob.download_as_text())
     assert want in got
  

@@ -183,21 +183,6 @@ def summarization_entrypoint(
     logger.log(f"cloud_event_id({event_id}): DB_WRITE",
                severity="INFO")
 
-    return errors
-
-
+    if errors:
+        return errors
     return {'summary': summary}
-    # try:
-    #     response = {
-    #         'revision': os.environ['REVISION'],
-    #         'summary': summarize_text(_MOCK_TEXT),
-    #     }
-    # except Exception as e:
-    #     response = {
-    #         'exception': str(e),
-    #     }
-    # response['metadata'] = metadata
-
-    # print(json.dumps({'response': response}, indent=2, sort_keys=True, default=default_marshaller))
-
-    # return response

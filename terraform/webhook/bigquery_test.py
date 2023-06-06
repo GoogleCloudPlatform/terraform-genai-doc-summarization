@@ -15,20 +15,21 @@
 import backoff
 import datetime
 import os
+from google.auth import default
+from bigquery import write_summarization_to_table
 
-from src.bigquery import write_summarization_to_table
-
-DATASET_ID = "academic_papers"
-TABLE_ID = "summarizations"
-PROJECT_ID = os.environ["PROJECT_ID"] 
+_DATASET_ID = "summary_dataset"
+_TABLE_ID = "summary_table"
+_PROJECT_ID = os.environ["PROJECT_ID"] 
+_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_write_summarization_to_table(capsys):
     errors = write_summarization_to_table(
-        project_id=PROJECT_ID,
-        dataset_id=DATASET_ID,
-        table_id=TABLE_ID,
+        project_id=_PROJECT_ID,
+        dataset_id=_DATASET_ID,
+        table_id=_TABLE_ID,
         bucket="gs://fake_bucket",
         filename="fake.pdf",
         complete_text="This is fake text of an academic paper",
@@ -36,6 +37,7 @@ def test_write_summarization_to_table(capsys):
         summary="Some fake text summary",
         summary_uri="gs://fake_bucket/fake-summary.txt",
         timestamp=datetime.datetime.now(),
+        credentials=_CREDENTIALS,
     )
 
     assert len(errors) == 0

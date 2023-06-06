@@ -51,10 +51,16 @@ def write_summarization_to_table(
       summary_uri (str): the Storage URI of the summary TXT document
       timestamp (datetime): when the processing occurred
     """
+    if (project_id == "") or (dataset_id == "") or (table_id == ""):
+        return [ValueError("project_id, dataset_id, or table_id is missing")]
+
+    if ((bucket == "") and (filename == "") and (complete_text == "") and (summary_uri == "")
+        and (summary == "") and (complete_text_uri == "") and (timestamp == None)):
+        return [ValueError("no row data provided for updating table")]
+
     client = bigquery.Client()
 
     table_name = f"{project_id}.{dataset_id}.{table_id}"
-
     rows_to_insert = [
         {
             "bucket": bucket,

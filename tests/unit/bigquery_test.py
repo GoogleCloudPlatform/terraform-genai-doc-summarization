@@ -12,11 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from google.cloud import bigquery
 from datetime import datetime
 from unittest.mock import ANY, MagicMock, patch
 
 from src.bigquery import write_summarization_to_table
+
+bucket = 'fake-bucket'
+filename = 'fake-file-name'
+summary_uri = 'fake-summary/uri/'
+summary = 'this is a fake summary'
+complete_text = 'this is the fake complete text'
+complete_text_uri = 'fake-complete-text/uri/'
+timestamp = datetime.now()
 
 @patch.object(bigquery.Client, 'insert_rows_json')
 def test_insert_rows_json(mock_insert_rows):
@@ -25,14 +34,7 @@ def test_insert_rows_json(mock_insert_rows):
     project_id = 'project-name'
     dataset_id = 'dataset-id'
     table_id = 'my-table'
-    table_name = f"{project_id}.{dataset_id}.{table_id}"
-    bucket = 'fake-bucket'
-    filename = 'fake-file-name'
-    summary_uri = 'fake-summary/uri/'
-    summary = 'this is a fake summary'
-    complete_text = 'this is the fake complete text'
-    complete_text_uri = 'fake-complete-text/uri/'
-    timestamp = datetime.now()
+    table_name = f'{project_id}.{dataset_id}.{table_id}'
     
     rows_to_insert = [
         {
@@ -59,4 +61,26 @@ def test_insert_rows_json(mock_insert_rows):
 
     # Assert
     mock_insert_rows.assert_called_with(table_name, rows_to_insert, row_ids=ANY)
-    
+
+def test_write_summarization_bad_inputs():
+    # Act
+    errors = write_summarization_to_table('', '', '',                                  
+                                         bucket,
+                                         filename,
+                                         complete_text,
+                                         complete_text_uri,
+                                         summary,
+                                         summary_uri,timestamp)
+
+    # Assert
+    assert len(errors) == 1
+    assert type(errors[0]) == ValueError
+
+def test_write_summarization_no_row_data():
+    # Act
+    errors = write_summarization_to_table('project', 'dataset', 'table',                                  
+                                         '', '', '', '', '', '', None)
+
+    # Assert
+    assert len(errors) == 1
+    assert type(errors[0]) == ValueError

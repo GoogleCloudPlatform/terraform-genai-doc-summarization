@@ -128,9 +128,14 @@ def entrypoint(cloud_event):
         complete_text_uri=complete_text_filename,
         summary=summary,
         summary_uri=output_filename,
-        timestamp=timeCreated       
+        timestamp=timeCreated
     )
 
+    if len(errors) > 0:
+        logger.log(f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}",
+                   severity="ERROR")
+        return errors
+        
     logger.log(f"cloud_event_id({event_id}): DB_WRITE  {orig_pdf_uri}",
                severity="INFO")
 

@@ -14,7 +14,6 @@
 
 from vertexai.preview.language_models import TextGenerationModel
 import vertexai
-from google.oauth2.credentials import Credentials
 
 
 def predict_large_language_model(
@@ -27,7 +26,6 @@ def predict_large_language_model(
     content: str,
     location: str = "us-central1",
     tuned_model_name: str = "",
-    credentials: Credentials = None,
 ) -> str:
     """Predict using a Large Language Model.
 
@@ -49,7 +47,6 @@ def predict_large_language_model(
     vertexai.init(
         project=project_id,
         location=location,
-        credentials=credentials,
     )
     model = TextGenerationModel.from_pretrained(model_name)
     if tuned_model_name:

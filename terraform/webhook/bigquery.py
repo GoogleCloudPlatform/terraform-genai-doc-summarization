@@ -18,7 +18,6 @@ from datetime import datetime
 
 from google.cloud import bigquery
 from google.cloud import logging
-from google.oauth2.credentials import Credentials
 
 BIGQUERY_UPSERT_LOGGER = "BigQueryUpsertLogger"
 
@@ -34,7 +33,6 @@ def write_summarization_to_table(
     summary: str,
     summary_uri: str,
     timestamp: datetime,
-    credentials: Credentials,
 ) -> Sequence[Mapping]:
     """Updates the BigQuery table with the document summarization
 
@@ -54,7 +52,7 @@ def write_summarization_to_table(
       timestamp (datetime): when the processing occurred
       credentials (Credentials): TODO(nicain)
     """
-    client = bigquery.Client(credentials=credentials)
+    client = bigquery.Client()
 
     table_name = f"{project_id}.{dataset_id}.{table_id}"
 

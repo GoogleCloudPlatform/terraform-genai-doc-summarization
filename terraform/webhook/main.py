@@ -13,14 +13,7 @@
 # limitations under the License.
 
 import datetime
-import json
 import os
-import re
-
-import cloudevents.http
-import functions_framework
-import flask.wrappers
-from google.auth import default
 from google.cloud import logging
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
@@ -37,7 +30,6 @@ from utils import coerce_datetime_zulu, truncate_complete_text
 _PROJECT_ID = os.environ['PROJECT_ID']
 _OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 _LOCATION = os.environ['LOCATION']
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 _MODEL_NAME = 'text-bison@001'
 _DEFAULT_PARAMETERS = {
     "temperature": .2,
@@ -60,7 +52,6 @@ def summarize_text(text: str, parameters: None | dict[str, int | float] = None) 
     vertexai.init(
         project=_PROJECT_ID,
         location=_LOCATION,
-        credentials=_CREDENTIALS
     )
 
     final_parameters = _DEFAULT_PARAMETERS.copy()
@@ -133,7 +124,6 @@ def summarization_entrypoint(
         _OUTPUT_BUCKET,
         complete_text_filename,
         extracted_text,
-        _CREDENTIALS,
     )
     logger.log(f"cloud_event_id({event_id}): FULLTEXT_UPLOAD {complete_text_filename}",
                severity="INFO")
@@ -149,7 +139,6 @@ def summarization_entrypoint(
         top_k=40,
         content=f'Summarize:\n{extracted_text_trunc}',
         location="us-central1",
-        credentials=_CREDENTIALS,
     )
     logger.log(f"cloud_event_id({event_id}): SUMMARY_COMPLETE",
             severity="INFO")
@@ -160,7 +149,6 @@ def summarization_entrypoint(
         _OUTPUT_BUCKET,
         output_filename,
         summary,
-        _CREDENTIALS,
     )
     logger.log(f"cloud_event_id({event_id}): SUMMARY_UPLOAD {upload_to_gcs}",
                severity="INFO")
@@ -177,7 +165,6 @@ def summarization_entrypoint(
         summary=summary,
         summary_uri=output_filename,
         timestamp=time_created,
-        credentials=_CREDENTIALS,
     )
 
     logger.log(f"cloud_event_id({event_id}): DB_WRITE",

@@ -13,15 +13,12 @@
 # limitations under the License.
 
 import backoff
-import datetime
 import os
-from google.auth import default
 
 from vertex_llm import predict_large_language_model
 
 _MODEL_NAME = 'text-bison@001'
 _PROJECT_ID = os.environ['PROJECT_ID']
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 
 extracted_text = """
 arXiv:cmp-lg/9404001v1 4 Apr 1994
@@ -85,7 +82,6 @@ def test_predict_large_language_model():
         top_k=40,
         content=f'Summarize:\n{extracted_text}',
         location="us-central1",
-        credentials=_CREDENTIALS,
     )
 
     assert summary != ""

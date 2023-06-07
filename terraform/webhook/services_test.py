@@ -23,7 +23,6 @@ from document_extract import async_document_extract
 from storage import upload_to_gcs
 from utils import truncate_complete_text
 from vertex_llm import predict_large_language_model
-from google.auth import default
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _BUCKET_NAME = os.environ["BUCKET"]
@@ -32,7 +31,6 @@ _DATASET_ID = "summary_dataset"
 _TABLE_ID = "summary_table"
 _FILE_NAME = '9404001v1.pdf'
 _MODEL_NAME = 'text-bison@001'
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 
 
 def check_blob_exists(bucket, filename) -> bool:
@@ -54,7 +52,6 @@ def test_up16_services():
         _OUTPUT_BUCKET,
         complete_text_filename,
         extracted_text,
-        credentials=_CREDENTIALS,
     )
 
     assert check_blob_exists(_OUTPUT_BUCKET, complete_text_filename)
@@ -79,7 +76,6 @@ def test_up16_services():
         _OUTPUT_BUCKET,
         output_filename,
         summary,
-        credentials=_CREDENTIALS,
     )
 
     assert check_blob_exists(_OUTPUT_BUCKET, output_filename)
@@ -95,7 +91,6 @@ def test_up16_services():
         summary=summary,
         summary_uri=output_filename,
         timestamp=datetime.datetime.now(),
-        credentials=_CREDENTIALS,
     )
 
     assert len(errors) == 0

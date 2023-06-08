@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file is needed to move src files onto path for testing
+import backoff
 import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import src # noqa
+from document_extract import async_document_extract
+
+_PROJECT_ID = os.environ["PROJECT_ID"] 
+_BUCKET_NAME = os.environ['BUCKET']
+_OUTPUT_BUCKET = f'{_PROJECT_ID}_output'
+_FILE_NAME = "9404001v1.pdf"
+
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+def test_async_document_extract(capsys):
+    out = async_document_extract(_BUCKET_NAME, _FILE_NAME, _OUTPUT_BUCKET)
+    assert 'Abstract' in out

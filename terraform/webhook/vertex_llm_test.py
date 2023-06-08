@@ -13,13 +13,12 @@
 # limitations under the License.
 
 import backoff
-import datetime
 import os
 
-from src.vertex_llm import predict_large_language_model
+from vertex_llm import predict_large_language_model
 
-MODEL_NAME = 'text-bison@001'
-PROJECT_ID = os.environ['PROJECT_ID'] 
+_MODEL_NAME = 'text-bison@001'
+_PROJECT_ID = os.environ['PROJECT_ID']
 
 extracted_text = """
 arXiv:cmp-lg/9404001v1 4 Apr 1994
@@ -75,8 +74,8 @@ the compiled grammar.
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_predict_large_language_model():
     summary = predict_large_language_model(
-        project_id=PROJECT_ID,
-        model_name=MODEL_NAME,
+        project_id=_PROJECT_ID,
+        model_name=_MODEL_NAME,
         temperature=0.2,
         max_decode_steps=1024,
         top_p=0.8,

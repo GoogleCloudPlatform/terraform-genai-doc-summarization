@@ -26,6 +26,16 @@ resource "google_project_service" "vision" {
   ]
 }
 
+resource "google_project_service" "notebooks" {
+  service = "notebooks.googleapis.com"
+  project            = var.project_id
+  disable_on_destroy = false
+  disable_dependent_services = true
+  depends_on = [
+    google_project_service.serviceusage
+  ]
+}
+
 resource "google_project_service" "cloudfunctions" {
   service = "cloudfunctions.googleapis.com"
   project            = var.project_id
@@ -346,5 +356,19 @@ resource "google_eventarc_trigger" "summarization" {
     google_project_iam_member.event_receiver,
     google_project_iam_member.run_invoker,
     google_project_iam_member.pubsub_publisher,
+  ]
+}
+
+resource "google_notebooks_instance" "instance" {
+  project = var.project_id
+  name = "sample-notebook"
+  location = "${var.region}-a"
+  machine_type = "e2-medium"
+  container_image {
+    repository = "us-central1-docker.pkg.dev/velociraptor-16p1-test-0/sample/sample"
+    tag = "latest"
+  }
+  depends_on = [
+    google_project_service.notebooks,
   ]
 }

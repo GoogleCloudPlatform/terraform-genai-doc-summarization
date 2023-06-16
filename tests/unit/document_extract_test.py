@@ -48,10 +48,10 @@ def test_async_document_extract(mock_get_output, mock_annotate):
         output_config=output_config)
 
     # Act
-    got = document_extract.async_document_extract(bucket, name, output_bucket, timeout)
+    got = document_extract.async_document_extract(bucket, name, output_bucket,
+                                                  timeout)
 
     # Assert
     assert want == got
     mock_annotate.assert_called_once()
     mock_annotate.assert_called_with(requests=[async_request])
-    

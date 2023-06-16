@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google import auth
-from google.cloud import aiplatform
 from vertexai.preview.language_models import TextGenerationModel
+import vertexai
 
 
 def predict_large_language_model(
@@ -40,11 +39,15 @@ def predict_large_language_model(
       content (str): the text to summarize
       location (str): the Google Cloud region to run in
       tuned_model_name (str): TODO(nicain)
+      credentials: TODO(nicain)
 
     Returns:
       The summarization of the content
     """
-    aiplatform.init(project=project_id, location=location)
+    vertexai.init(
+        project=project_id,
+        location=location,
+    )
     model = TextGenerationModel.from_pretrained(model_name)
     if tuned_model_name:
         model = model.get_tuned_model(tuned_model_name)

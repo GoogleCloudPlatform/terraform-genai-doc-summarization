@@ -50,6 +50,7 @@ def write_summarization_to_table(
       summary (str): the text summary of the document
       summary_uri (str): the Storage URI of the summary TXT document
       timestamp (datetime): when the processing occurred
+      credentials (Credentials): TODO(nicain)
     """
     client = bigquery.Client()
 

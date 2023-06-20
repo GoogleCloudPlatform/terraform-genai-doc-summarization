@@ -1,5 +1,17 @@
-import json
-import os
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import datetime
 import re
 from typing import Union
@@ -8,42 +20,15 @@ import pandas as pd
 from google.auth import default
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
-import functions_framework
 
-_PROJECT_ID=os.environ['PROJECT_ID']
-_LOCATION=os.environ['LOCATION']
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+_FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
+_FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
 
-_MOCK_TEXT = '''
-The efficient-market hypothesis (EMH) is a hypothesis in financial \
-economics that states that asset prices reflect all available \
-information. A direct implication is that it is impossible to \
-"beat the market" consistently on a risk-adjusted basis since market \
-prices should only react to new information. Because the EMH is \
-formulated in terms of risk adjustment, it only makes testable \
-predictions when coupled with a particular model of risk. As a \
-result, research in financial economics since at least the 1990s has \
-focused on market anomalies, that is, deviations from specific \
-models of risk. The idea that financial market returns are difficult \
-to predict goes back to Bachelier, Mandelbrot, and Samuelson, but \
-is closely associated with Eugene Fama, in part due to his \
-influential 1970 review of the theoretical and empirical research. \
-The EMH provides the basic logic for modern risk-based theories of \
-asset prices, and frameworks such as consumption-based asset pricing \
-and intermediary asset pricing can be thought of as the combination \
-of a model of risk with the EMH. Many decades of empirical research \
-on return predictability has found mixed evidence. Research in the \
-1950s and 1960s often found a lack of predictability (e.g. Ball and \
-Brown 1968; Fama, Fisher, Jensen, and Roll 1969), yet the \
-1980s-2000s saw an explosion of discovered return predictors (e.g. \
-Rosenberg, Reid, and Lanstein 1985; Campbell and Shiller 1988; \
-Jegadeesh and Titman 1993). Since the 2010s, studies have often \
-found that return predictability has become more elusive, as \
-predictability fails to work out-of-sample (Goyal and Welch 2008), \
-or has been weakened by advances in trading technology and investor \
-learning (Chordia, Subrahmanyam, and Tong 2014; McLean and Pontiff \
-2016; Martineau 2021).
-'''.strip()
+from bigquery import write_summarization_to_table
+from document_extract import async_document_extract
+from storage import upload_to_gcs
+from vertex_llm import predict_large_language_model
+from utils import coerce_datetime_zulu, truncate_complete_text
 
 _MOCK_DATA = [{'input_text': 'What has research in financial economics since at least the 1990s focused on?',
   'output_text': 'market anomalies'},
@@ -72,23 +57,11 @@ _DEFAULT_PARAMETERS = {
     "top_p": .95,
     "top_k": 40,
 }
+_DATASET_ID = os.environ['DATASET_ID']
+_TABLE_ID = os.environ['TABLE_ID']
 
 
-def coerce_datetime_zulu(input_datetime):
-
-  regex = re.compile(r"(.*)(Z$)")
-  regex_match = regex.search(input_datetime)
-  if regex_match:
-      assert input_datetime.startswith(regex_match.group(1))
-      assert input_datetime.endswith(regex_match.group(2))
-      return datetime.datetime.fromisoformat(f'{input_datetime[:-1]}+00:00')
-  raise RuntimeError(
-      'The input datetime is not in the expected format. '
-      'Please check the format of the input datetime. Expected "Z" at the end'
-  )
-
-
-def default_marshaller(o):
+def default_marshaller(o: object) -> str:
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
     return str(o)

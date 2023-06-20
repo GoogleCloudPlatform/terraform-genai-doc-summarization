@@ -50,10 +50,11 @@ def write_summarization_to_table(
       summary (str): the text summary of the document
       summary_uri (str): the Storage URI of the summary TXT document
       timestamp (datetime): when the processing occurred
+      credentials (Credentials): TODO(nicain)
     """
     client = bigquery.Client()
 
-    table_id = f"{project_id}.{dataset_id}.{table_id}"
+    table_name = f"{project_id}.{dataset_id}.{table_id}"
 
     rows_to_insert = [
         {
@@ -68,7 +69,7 @@ def write_summarization_to_table(
     ]
 
     errors = client.insert_rows_json(
-        table_id, rows_to_insert, row_ids=bigquery.AutoRowIDs.GENERATE_UUID
+        table_name, rows_to_insert, row_ids=bigquery.AutoRowIDs.GENERATE_UUID
     )
     if errors != []:
         logging_client = logging.Client()

@@ -48,6 +48,7 @@ def predict_large_language_model(
         project=project_id,
         location=location,
     )
+    print('FOO', vertexai.init)
     model = TextGenerationModel.from_pretrained(model_name)
     if tuned_model_name:
         model = model.get_tuned_model(tuned_model_name)

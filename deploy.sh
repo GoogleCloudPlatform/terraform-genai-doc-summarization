@@ -40,8 +40,6 @@ gcloud config set project "${PROJECT_ID?}"
 gcloud --quiet auth login "${PRINCIPAL?}" --no-launch-browser
 gcloud services enable cloudresourcemanager.googleapis.com
 
-sudo docker build --build-arg BASE_IMAGE="${BASE_TERRAFORM_IMAGE?}" -t "${TERRAFORM_IMAGE?}" .
-
 sudo docker run \
   -w /app \
   -v "$(pwd)"/terraform:/app \
@@ -65,5 +63,4 @@ sudo docker run \
   -var bucket="${BUCKET?}" \
   -var principal="${PRINCIPAL?}" \
   -var revision="${REVISION?}" \
-  -var access_token="${ACCESS_TOKEN?}" \
   "${DESTROY?}"

@@ -15,10 +15,6 @@ variable "region" {
   default = "us-central1"
 }
 
-variable "access_token" {
-  type        = string
-}
-
 variable "webhook_name" {
   type        = string
   default = "webhook"

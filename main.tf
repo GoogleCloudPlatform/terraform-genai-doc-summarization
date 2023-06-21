@@ -1,12 +1,21 @@
+/**
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 data "google_project" "project" {
   project_id     = var.project_id
-}
-
-terraform {
-  backend "gcs" {
-    bucket  = null
-    prefix  = null
-  }
 }
 
 resource "google_project_service" "serviceusage" {
@@ -120,7 +129,7 @@ data "archive_file" "webhook" {
 
 resource "google_storage_bucket_object" "webhook" {
   name   = "${var.webhook_name}.${data.archive_file.webhook.output_base64sha256}.zip"
-  bucket = var.bucket
+  bucket = google_storage_bucket.main.name
   source = data.archive_file.webhook.output_path
 }
 
@@ -188,7 +197,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     entry_point = "entrypoint"
     source {
       storage_source {
-        bucket = var.bucket
+        bucket = var.bucket_name
         object = google_storage_bucket_object.webhook.name
       }
     }
@@ -204,9 +213,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     timeout_seconds    = var.timeout_seconds
     environment_variables = {
       PROJECT_ID = var.project_id
-      PRINCIPAL = var.principal
       LOCATION = var.region
-      REVISION = var.revision
       OUTPUT_BUCKET = google_storage_bucket.output.name
       DATASET_ID = google_bigquery_dataset.default.dataset_id
       TABLE_ID = google_bigquery_table.default.table_id
@@ -284,6 +291,13 @@ resource "google_storage_bucket" "output" {
   name          = "${var.project_id}_output"
   location      = var.region
   force_destroy = true
+  uniform_bucket_level_access = true
+}
+
+resource "google_storage_bucket" "main" {
+  project  = var.project_id
+  name     = var.bucket_name
+  location = "US"
   uniform_bucket_level_access = true
 }
 

@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-variable "project_id" {
-  description = "The ID of the project in which to provision resources."
-  type        = string
-}
+terraform {
+  required_version = ">= 0.13"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 3.53, < 5.0"
+    }
+  }
 
-variable "bucket_name" {
-  description = "The name of the bucket to create."
-  type        = string
+  provider_meta "google" {
+    module_name = "blueprints/terraform/gen-ai-document-summarization/v0.0.1"
+  }
+
+  backend "gcs" {
+    bucket  = null
+    prefix  = null
+  }
 }

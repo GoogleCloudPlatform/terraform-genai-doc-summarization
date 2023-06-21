@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 4.0"
-    }
-  }
-  required_version = ">= 0.13"
+variable "project_id" {
+  description = "The project ID to deploy to"
+  type        = string
+}
+
+variable "bucket_name" {
+  description = "The name of the bucket to create"
+  type        = string
+}
+
+variable "region" {
+  type        = string
+  default = "us-central1"
+}
+
+variable "webhook_name" {
+  type        = string
+  default = "webhook"
+}
+
+variable "timeout_seconds" {
+  type        = number
+  default     = 900
+}
+
+variable "zone" {
+  default = "us-central1-a"
+  type    = string
 }

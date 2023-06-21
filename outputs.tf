@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-module "gen_ai_document_summarization" {
-  source = "../.."
-
-  project_id  = var.project_id
-  bucket_name = var.bucket_name
+output "bucket_name" {
+  description = "Name of the bucket"
+  value       = google_storage_bucket.main.name
 }

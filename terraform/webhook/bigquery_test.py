@@ -32,6 +32,7 @@ complete_text_uri = "fake-complete-text/uri/"
 timestamp = datetime.now()
 
 
+# System/integration tests
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_write_summarization_to_table_system(capsys):
     errors = write_summarization_to_table(
@@ -50,6 +51,7 @@ def test_write_summarization_to_table_system(capsys):
     assert len(errors) == 0
 
 
+# Unit tests
 @patch.object(bigquery.Client, "insert_rows_json")
 def test_insert_rows_json(mock_insert_rows):
     mock_insert_rows.return_value = []

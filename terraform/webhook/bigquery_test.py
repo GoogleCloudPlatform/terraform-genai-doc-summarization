@@ -15,15 +15,25 @@
 import backoff
 import datetime
 import os
+from unittest.mock import ANY, patch
+from google.cloud import bigquery
 from bigquery import write_summarization_to_table
 
 _DATASET_ID = "summary_dataset"
 _TABLE_ID = "summary_table"
-_PROJECT_ID = os.environ["PROJECT_ID"] 
+_PROJECT_ID = os.environ["PROJECT_ID"]
+
+bucket = "fake-bucket"
+filename = "fake-file-name"
+summary_uri = "fake-summary/uri/"
+summary = "this is a fake summary"
+complete_text = "this is the fake complete text"
+complete_text_uri = "fake-complete-text/uri/"
+timestamp = datetime.now()
 
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_write_summarization_to_table(capsys):
+def test_write_summarization_to_table_system(capsys):
     errors = write_summarization_to_table(
         project_id=_PROJECT_ID,
         dataset_id=_DATASET_ID,
@@ -38,3 +48,73 @@ def test_write_summarization_to_table(capsys):
     )
 
     assert len(errors) == 0
+
+
+@patch.object(bigquery.Client, "insert_rows_json")
+def test_insert_rows_json(mock_insert_rows):
+    mock_insert_rows.return_value = []
+
+    project_id = "project-name"
+    dataset_id = "dataset-id"
+    table_id = "my-table"
+    table_name = f"{project_id}.{dataset_id}.{table_id}"
+
+    rows_to_insert = [
+        {
+            "bucket": bucket,
+            "filename": filename,
+            "extracted_text": complete_text,
+            "summary_uri": summary_uri,
+            "summary": summary,
+            "complete_text_uri": complete_text_uri,
+            "timestamp": timestamp.isoformat(),
+        }
+    ]
+
+    # Act
+    write_summarization_to_table(
+        project_id,
+        dataset_id,
+        table_id,
+        bucket,
+        filename,
+        complete_text,
+        complete_text_uri,
+        summary,
+        summary_uri,
+        timestamp,
+    )
+
+    # Assert
+    mock_insert_rows.assert_called_with(table_name, rows_to_insert, row_ids=ANY)
+
+
+def test_write_summarization_bad_inputs():
+    # Act
+    errors = write_summarization_to_table(
+        "",
+        "",
+        "",
+        bucket,
+        filename,
+        complete_text,
+        complete_text_uri,
+        summary,
+        summary_uri,
+        timestamp,
+    )
+
+    # Assert
+    assert len(errors) == 1
+    assert type(errors[0]) == ValueError
+
+
+def test_write_summarization_no_row_data():
+    # Act
+    errors = write_summarization_to_table(
+        "project", "dataset", "table", "", "", "", "", "", "", None
+    )
+
+    # Assert
+    assert len(errors) == 1
+    assert type(errors[0]) == ValueError

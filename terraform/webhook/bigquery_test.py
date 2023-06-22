@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
-import datetime
 import os
 from unittest.mock import ANY, patch
+import backoff
+from datetime import datetime
 from google.cloud import bigquery
+
 from bigquery import write_summarization_to_table
+
 
 _DATASET_ID = "summary_dataset"
 _TABLE_ID = "summary_table"
@@ -45,7 +47,7 @@ def test_write_summarization_to_table_system(capsys):
         complete_text_uri="gs://fake_bucket/texts/fake.txt",
         summary="Some fake text summary",
         summary_uri="gs://fake_bucket/fake-summary.txt",
-        timestamp=datetime.datetime.now(),
+        timestamp=datetime.now(),
     )
 
     assert len(errors) == 0

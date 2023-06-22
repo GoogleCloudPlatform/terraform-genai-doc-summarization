@@ -15,9 +15,11 @@
 import backoff
 import datetime
 import os
+from unittest.mock import MagicMock, patch
 
 from google.cloud import storage
 from storage import upload_to_gcs
+
 
 _BUCKET_NAME = os.environ["BUCKET"]
 _FILE_NAME = "system-test/fake.text"
@@ -33,4 +35,22 @@ def test_upload_to_gcs():
     blob = bucket.blob(_FILE_NAME)
     got = str(blob.download_as_text())
     assert want in got
- 
+
+
+@patch.object(storage.Client, "get_bucket")
+def test_upload_to_gcs(mock_get_bucket):
+    mock_blob = MagicMock(spec=storage.Blob)
+    mock_bucket = MagicMock(spec=storage.Bucket)
+    mock_bucket.blob.return_value = mock_blob
+    mock_get_bucket.return_value = mock_bucket
+    bucket_name = "fake-bucket"
+    blob_name = "fake-blob"
+    data = "fake-data"
+
+    # Act
+    upload_to_gcs(bucket_name, blob_name, data)
+
+    # Assert
+    mock_get_bucket.assert_called_with(bucket_name)
+    mock_bucket.blob.assert_called_with(blob_name)
+    mock_blob.upload_from_string.assert_called_with(data)

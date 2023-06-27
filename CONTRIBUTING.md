@@ -27,9 +27,9 @@ information on using pull requests.
 
 The following dependencies must be installed on the development system:
 
-- [Docker Engine][docker-engine]
-- [Google Cloud SDK][google-cloud-sdk]
-- [make]
+- [Docker Engine](https://docs.docker.com/engine/install/)
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
+- [make](https://www.gnu.org/software/make/)
 
 ### Generating Documentation for Inputs and Outputs
 

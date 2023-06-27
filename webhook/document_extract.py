@@ -76,12 +76,21 @@ def async_document_extract(
 
     # Once the request has completed and the output has been
     # written to GCS, we can list all the output files.
+    return get_ocr_output_from_bucket(gcs_destination_uri, output_bucket)
+
+def get_ocr_output_from_bucket(gcs_destination_uri: str, bucket_name: str) -> str:
+    """Iterates over blobs in output bucket to get full OCR result.
+
+    Arguments:
+        gcs_destination_uri: the URI where the OCR output was saved.
+        bucket_name: the name of the bucket where the output was saved.
+    
+    Returns the full text of the document.
+    """
     storage_client = storage.Client()
 
     match = re.match(r'gs://([^/]+)/(.+)', gcs_destination_uri)
-    bucket_name = match.group(1)
     prefix = match.group(2)
-
     bucket = storage_client.get_bucket(bucket_name)
 
     # List objects with the given prefix, filtering out folders.

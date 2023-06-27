@@ -18,108 +18,28 @@ data "google_project" "project" {
   project_id     = var.project_id
 }
 
-resource "google_project_service" "serviceusage" {
-  service = "serviceusage.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-}
+module "project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "~> 14.2"
 
-resource "google_project_service" "vision" {
-  service = "vision.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
+  project_id = var.project_id
+
+  activate_apis = [
+    "serviceusage.googleapis.com",
+    "vision.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "serviceusage.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "eventarc.googleapis.com",
+    "bigquery.googleapis.com",
+    "aiplatform.googleapis.com",
+    "storage.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "run.googleapis.com",
+    "iam.googleapis.com",
   ]
 }
 
-resource "google_project_service" "cloudfunctions" {
-  service = "cloudfunctions.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "artifactregistry" {
-  service = "artifactregistry.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "eventarc" {
-  service            = "eventarc.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "bigquery" {
-  service            = "bigquery.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "aiplatform" {
-  service            = "aiplatform.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "storage" {
-  service            = "storage.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "cloudbuild" {
-  service = "cloudbuild.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "run" {
-  service = "run.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
-
-resource "google_project_service" "iam" {
-  service = "iam.googleapis.com"
-  project            = var.project_id
-  disable_on_destroy = false
-  disable_dependent_services = true
-  depends_on = [
-    google_project_service.serviceusage
-  ]
-}
 
 data "archive_file" "webhook" {
   type        = "zip"
@@ -138,7 +58,7 @@ resource "google_service_account" "webhook" {
   account_id   = "webhook-service-account"
   display_name = "Serverless Webhooks Service Account"
   depends_on = [
-    google_project_service.iam,
+    module.project_services,
   ]
 }
 
@@ -147,7 +67,7 @@ resource "google_project_iam_member" "aiplatform_user" {
   role    = "roles/aiplatform.user"
   member = "serviceAccount:${google_service_account.webhook.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -156,7 +76,7 @@ resource "google_project_iam_member" "storage_admin" {
   role    = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.webhook.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -165,7 +85,7 @@ resource "google_project_iam_member" "log_writer" {
   role    = "roles/logging.logWriter"
   member = "serviceAccount:${google_service_account.webhook.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -174,7 +94,7 @@ resource "google_project_iam_member" "data_editor" {
   role    = "roles/bigquery.dataEditor"
   member = "serviceAccount:${google_service_account.webhook.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -183,7 +103,7 @@ resource "google_project_iam_member" "artifactregistry_reader" {
   role    = "roles/artifactregistry.reader"
   member = "serviceAccount:${google_service_account.webhook.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -220,22 +140,23 @@ resource "google_cloudfunctions2_function" "webhook" {
     }
   }
   depends_on = [
-    google_project_service.artifactregistry,
-    google_project_service.cloudbuild,
-    google_project_service.run,
-    google_project_service.vision,
+    module.project_services,
   ]
 }
 
 resource "google_bigquery_dataset" "default" {
   dataset_id = "summary_dataset"
   project    = var.project_id
+  depends_on = [
+    module.project_services,
+  ]
 }
 
 resource "google_bigquery_table" "default" {
   dataset_id = google_bigquery_dataset.default.dataset_id
   table_id   = "summary_table"
   project    = var.project_id
+  deletion_protection=false
 
   schema = <<EOF
 [
@@ -306,7 +227,7 @@ resource "google_service_account" "upload_trigger" {
   account_id   = "upload-trigger-service-account"
   display_name = "Eventarc Service Account"
   depends_on = [
-    google_project_service.iam,
+    module.project_services,
   ]
 }
 
@@ -315,7 +236,7 @@ resource "google_project_iam_member" "event_receiver" {
   role    = "roles/eventarc.eventReceiver"
   member = "serviceAccount:${google_service_account.upload_trigger.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -324,7 +245,7 @@ resource "google_project_iam_member" "run_invoker" {
   role    = "roles/run.invoker"
   member = "serviceAccount:${google_service_account.upload_trigger.email}"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
 
@@ -333,7 +254,7 @@ resource "google_project_iam_member" "pubsub_publisher" {
   role    = "roles/pubsub.publisher"
   member = "serviceAccount:service-${data.google_project.project.number}@gs-project-accounts.iam.gserviceaccount.com"
   depends_on = [
-    google_project_service.iam
+    module.project_services,
   ]
 }
   

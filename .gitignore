@@ -1,13 +1,54 @@
-env/
-bin/
-*.pyc
+# OSX leaves these everywhere on SMB shares
+._*
+
+# OSX trash
 .DS_Store
 
-.terraform
+# Python
+*.pyc
+
+# Emacs save files
+*~
+\#*\#
+.\#*
+
+# Vim-related files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+
+### https://raw.github.com/github/gitignore/90f149de451a5433aebd94d02d11b0e28843a1af/Terraform.gitignore
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Kitchen files
+**/inspec.lock
+**/.kitchen
+**/kitchen.local.yml
+**/Gemfile.lock
+
+# Ignore any .tfvars files that are generated automatically for each Terraform run. Most
+# .tfvars files are managed as part of configuration and so should be included in
+# version control.
+**/*.tfvars
+
+credentials.json
+
+# tf lock file
 .terraform.lock.hcl
+
+# Custom:
+env/
+bin/
+.DS_Store
 .tmp
-terraform.tfstate
-terraform.tfstate.backup
-*.auto.tfvars
-**/debug.log
-**/tfdebug.log

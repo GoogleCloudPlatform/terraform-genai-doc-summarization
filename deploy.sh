@@ -14,16 +14,11 @@
 # limitations under the License.
 set -e
 
-if [ -z "$(git status --porcelain)" ]; then 
-  REVISION="$(git rev-parse --short HEAD)"
-else 
-  echo "Git repo is dirty, continuing anyway..."
-  REVISION="DIRTY_REPO"
-  # echo "Git repo is dirty, cancelling deployment..."
-  # exit 1
-fi
-
-source config.env
+export PROJECT_ID="velociraptor-16p1-test-0"
+export TF_PLAN_STORAGE_BUCKET="${PROJECT_ID?}-tf"
+export BUCKET_NAME=${TF_PLAN_STORAGE_BUCKET?}-main
+export TERRAFORM_IMAGE="hashicorp/terraform:1.4.6"
+export PREFIX="terraform/${PROJECT_ID?}"
 
 DESTROY=
 while (( ${#} > 0 )); do
@@ -37,14 +32,12 @@ while (( ${#} > 0 )); do
 done
 
 gcloud config set project "${PROJECT_ID?}"
-gcloud --quiet auth login "${PRINCIPAL?}" --no-launch-browser
+gcloud --quiet auth login "$(whoami)@google.com" --no-launch-browser
 gcloud services enable cloudresourcemanager.googleapis.com
-
-sudo docker build --build-arg BASE_IMAGE="${BASE_TERRAFORM_IMAGE?}" -t "${TERRAFORM_IMAGE?}" .
 
 sudo docker run \
   -w /app \
-  -v "$(pwd)"/terraform:/app \
+  -v "$(pwd)":/app \
   "${TERRAFORM_IMAGE?}" \
   init \
   -upgrade \
@@ -55,15 +48,11 @@ sudo docker run \
 
 sudo docker run \
   -w /app \
-  -v "$(pwd)"/terraform:/app \
+  -v "$(pwd)":/app \
   -e GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)" \
   "${TERRAFORM_IMAGE?}" \
   apply \
   --auto-approve \
   -var project_id="${PROJECT_ID?}" \
-  -var region="${REGION?}" \
-  -var bucket="${BUCKET?}" \
-  -var principal="${PRINCIPAL?}" \
-  -var revision="${REVISION?}" \
-  -var access_token="${ACCESS_TOKEN?}" \
+  -var bucket_name="${BUCKET_NAME?}" \
   "${DESTROY?}"

@@ -18,7 +18,6 @@ from google.cloud import logging
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
-_FUNCTIONS_GCS_EVENT_LOGGER = 'function-triggered-by-storage'
 _FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
 
 from bigquery import write_summarization_to_table
@@ -92,7 +91,7 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created):
     
     orig_pdf_uri = f"gs://{bucket}/{name}"
     logging_client = logging.Client()
-    logger = logging_client.logger(_FUNCTIONS_GCS_EVENT_LOGGER)
+    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
     logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
                severity="INFO")
     

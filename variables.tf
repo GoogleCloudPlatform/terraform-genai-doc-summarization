@@ -15,8 +15,12 @@
  */
 
 variable "project_id" {
-  description = "The project ID to deploy to"
+  description = "The Google Cloud project ID to deploy to"
   type        = string
+  validation {
+    condition     = var.project_id != ""
+    error_message = "Error: project_id is required"
+  }
 }
 
 variable "bucket_name" {
@@ -25,21 +29,31 @@ variable "bucket_name" {
 }
 
 variable "region" {
+  description = "Google Cloud region"
   type        = string
-  default = "us-central1"
+  default     = "us-central1"
 }
 
 variable "webhook_name" {
+  description = "Name of the webhook"
   type        = string
-  default = "webhook"
+  default     = "webhook"
 }
 
-variable "timeout_seconds" {
+variable "webhook_path" {
+  description = "Path to the webhook directory"
+  type        = string
+  default     = "webhook"
+}
+
+variable "gcf_timeout_seconds" {
+  description = "GCF execution timeout"
   type        = number
   default     = 900
 }
 
-variable "zone" {
-  default = "us-central1-a"
-  type    = string
+variable "time_to_enable_apis" {
+  description = "Wait time to enable APIs in new projects"
+  type        = string
+  default     = "180s"
 }

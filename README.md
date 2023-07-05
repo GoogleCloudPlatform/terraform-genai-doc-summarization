@@ -53,7 +53,12 @@ Functional examples are included in the
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | bucket\_name | The name of the bucket to create | `string` | n/a | yes |
-| project\_id | The project ID to deploy to | `string` | n/a | yes |
+| gcf\_timeout\_seconds | GCF execution timeout | `number` | `900` | no |
+| project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
+| region | Google Cloud region | `string` | `"us-central1"` | no |
+| time\_to\_enable\_apis | Wait time to enable APIs in new projects | `string` | `"180s"` | no |
+| webhook\_name | Name of the webhook | `string` | `"webhook"` | no |
+| webhook\_path | Path to the webhook directory | `string` | `"webhook"` | no |
 
 ## Outputs
 

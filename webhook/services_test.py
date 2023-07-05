@@ -26,11 +26,11 @@ from vertex_llm import predict_large_language_model
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _BUCKET_NAME = os.environ["BUCKET"]
-_OUTPUT_BUCKET = f'{_PROJECT_ID}_output'
+_OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _DATASET_ID = "summary_dataset"
 _TABLE_ID = "summary_table"
-_FILE_NAME = '9404001v1.pdf'
-_MODEL_NAME = 'text-bison@001'
+_FILE_NAME = "9404001v1.pdf"
+_MODEL_NAME = "text-bison@001"
 
 
 def check_blob_exists(bucket, filename) -> bool:
@@ -39,15 +39,18 @@ def check_blob_exists(bucket, filename) -> bool:
     blob = bucket.blob(filename)
     return blob.exists()
 
+
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_up16_services():
-    extracted_text = async_document_extract(_BUCKET_NAME,
-                                            _FILE_NAME,
-                                            output_bucket=_OUTPUT_BUCKET)
+    extracted_text = async_document_extract(
+        _BUCKET_NAME, _FILE_NAME, output_bucket=_OUTPUT_BUCKET
+    )
 
     assert "Abstract" in extracted_text
 
-    complete_text_filename = f'system-test/{_FILE_NAME.replace(".pdf", "")}_fulltext.txt'
+    complete_text_filename = (
+        f'system-test/{_FILE_NAME.replace(".pdf", "")}_fulltext.txt'
+    )
     upload_to_gcs(
         _OUTPUT_BUCKET,
         complete_text_filename,
@@ -65,7 +68,7 @@ def test_up16_services():
         max_decode_steps=1024,
         top_p=0.8,
         top_k=40,
-        content=f'Summarize:\n{extracted_text_}',
+        content=f"Summarize:\n{extracted_text_}",
         location="us-central1",
     )
 

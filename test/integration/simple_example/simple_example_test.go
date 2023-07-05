@@ -27,9 +27,7 @@ func TestSimpleExample(t *testing.T) {
 	example := tft.NewTFBlueprintTest(t)
 
 	example.DefineVerify(func(assert *assert.Assertions) {
-		example.DefaultVerify(assert)
-
-		projectID := example.GetStringOutput("project_id")
+		projectID := example.GetTFSetupStringOutput("project_id")
 		services := gcloud.Run(t, "services list", gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})).Array()
 
 		match := utils.GetFirstMatchResult(t, services, "config.name", "storage.googleapis.com")

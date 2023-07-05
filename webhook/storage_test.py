@@ -24,6 +24,7 @@ from storage import upload_to_gcs
 _BUCKET_NAME = os.environ["BUCKET"]
 _FILE_NAME = "system-test/fake.text"
 
+
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_upload_to_gcs():
     want = datetime.datetime.now().isoformat()
@@ -38,7 +39,7 @@ def test_upload_to_gcs():
 
 
 @patch.object(storage.Client, "get_bucket")
-def test_upload_to_gcs(mock_get_bucket):
+def test_upload_to_gcs_mock(mock_get_bucket):
     mock_blob = MagicMock(spec=storage.Blob)
     mock_bucket = MagicMock(spec=storage.Bucket)
     mock_bucket.blob.return_value = mock_blob

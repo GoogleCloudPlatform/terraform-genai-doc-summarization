@@ -255,6 +255,7 @@ resource "google_project_iam_member" "run_invoker" {
 }
 
 data "google_storage_project_service_account" "gcs_account" {
+  project    = var.project_id
   depends_on = [time_sleep.wait_for_apis]
 }
 

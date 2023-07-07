@@ -16,6 +16,7 @@
 
 locals {
   int_required_roles = [
+    #TODO: Pare down the roles.
     "roles/owner"
   ]
 }

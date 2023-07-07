@@ -19,7 +19,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = ">= 4.66"
+      version = ">= 4.66, < 5.0"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
@@ -42,8 +42,4 @@ terraform {
   provider_meta "google" {
     module_name = "blueprints/terraform/gen-ai-document-summarization/v0.0.1"
   }
-}
-
-provider "google" {
-  project = var.project_id
 }

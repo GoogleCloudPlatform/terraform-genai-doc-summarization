@@ -14,27 +14,13 @@
  * limitations under the License.
  */
 
-locals {
-  int_required_roles = [
-    #TODO: Pare down the roles.
-    "roles/owner"
-  ]
+resource "random_id" "id" {
+  byte_length = 4
 }
 
-resource "google_service_account" "int_test" {
-  project      = module.project.project_id
-  account_id   = "ci-account"
-  display_name = "ci-account"
-}
-
-resource "google_project_iam_member" "int_test" {
-  for_each = toset(local.int_required_roles)
-
-  project = module.project.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.int_test.email}"
-}
-
-resource "google_service_account_key" "int_test" {
-  service_account_id = google_service_account.int_test.id
+module "simple" {
+  source       = "../../"
+  project_id   = var.project_id
+  webhook_path = abspath("../../webhook")
+  bucket_name  = "cft-test-${random_id.id.hex}"
 }

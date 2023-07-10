@@ -25,8 +25,18 @@ module "project" {
   billing_account   = var.billing_account
 
   activate_apis = [
+    "aiplatform.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "bigquery.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "eventarc.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
+    "serviceusage.googleapis.com",
     "storage-api.googleapis.com",
-    "serviceusage.googleapis.com"
+    "storage.googleapis.com",
+    "vision.googleapis.com",
   ]
 }

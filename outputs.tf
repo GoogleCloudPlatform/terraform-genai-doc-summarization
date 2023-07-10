@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-output "bucket_name" {
-  description = "Name of the bucket"
-  value       = google_storage_bucket.main.name
+output "neos_walkthrough_url" {
+  value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--document-summarization-gcf_tour"
+  description = "The URL to launch the in-console tutorial for the Generative AI Document Summarization solution"
+}
+
+output "genai_doc_summary_colab_url" {
+  value       = "https://colab.research.google.com/github/GoogleCloudPlatform/terraform-google-gen-ai-document-summarization/blob/main/notebook/gen_ai_jss.ipynb"
+  description = "The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution"
 }

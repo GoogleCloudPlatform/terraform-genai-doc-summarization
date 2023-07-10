@@ -24,8 +24,7 @@ from storage import upload_to_gcs
 from vertex_llm import predict_large_language_model
 from utils import coerce_datetime_zulu, truncate_complete_text
 
-_FUNCTIONS_GCS_EVENT_LOGGER = "function-triggered-by-storage"
-_FUNCTIONS_VERTEX_EVENT_LOGGER = "summarization-by-llm"
+_FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
@@ -90,8 +89,10 @@ def entrypoint(request: object) -> dict[str, str]:
 def cloud_event_entrypoint(event_id, bucket, name, time_created):
     orig_pdf_uri = f"gs://{bucket}/{name}"
     logging_client = logging.Client()
-    logger = logging_client.logger(_FUNCTIONS_GCS_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}", severity="INFO")
+
+    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
+    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
+               severity="INFO")
 
     extracted_text = async_document_extract(bucket, name, output_bucket=_OUTPUT_BUCKET)
     logger.log(

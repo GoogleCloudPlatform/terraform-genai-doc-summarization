@@ -25,6 +25,7 @@ _BUCKET_NAME = os.environ["BUCKET"]
 _OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _FILE_NAME = "9404001v1.pdf"
 
+
 # System / integration test
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_async_document_extract_system(capsys):

@@ -54,8 +54,15 @@ def write_summarization_to_table(
     if (project_id == "") or (dataset_id == "") or (table_id == ""):
         return [ValueError("project_id, dataset_id, or table_id is missing")]
 
-    if ((bucket == "") and (filename == "") and (complete_text == "") and (summary_uri == "")
-        and (summary == "") and (complete_text_uri == "") and (timestamp == None)):
+    if (
+        (bucket == "")
+        and (filename == "")
+        and (complete_text == "")
+        and (summary_uri == "")
+        and (summary == "")
+        and (complete_text_uri == "")
+        and (timestamp is None)
+    ):
         return [ValueError("no row data provided for updating table")]
     client = bigquery.Client()
 
@@ -66,7 +73,7 @@ def write_summarization_to_table(
             "bucket": bucket,
             "filename": filename,
             "extracted_text": complete_text,
-            "summary_uri":  summary_uri,
+            "summary_uri": summary_uri,
             "summary": summary,
             "complete_text_uri": complete_text_uri,
             "timestamp": timestamp.isoformat(),
@@ -79,8 +86,9 @@ def write_summarization_to_table(
     if errors != []:
         logging_client = logging.Client()
         logger = logging_client.logger(BIGQUERY_UPSERT_LOGGER)
-        logger.log(f"Encountered errors while inserting rows: {errors}",
-                   severity="ERROR")
+        logger.log(
+            f"Encountered errors while inserting rows: {errors}", severity="ERROR"
+        )
         return errors
-    
+
     return []

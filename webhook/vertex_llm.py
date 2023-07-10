@@ -48,7 +48,7 @@ def predict_large_language_model(
         project=project_id,
         location=location,
     )
-    print('FOO', vertexai.init)
+    print("FOO", vertexai.init)
     model = TextGenerationModel.from_pretrained(model_name)
     if tuned_model_name:
         model = model.get_tuned_model(tuned_model_name)
@@ -57,8 +57,6 @@ def predict_large_language_model(
         temperature=temperature,
         max_output_tokens=max_decode_steps,
         top_k=top_k,
-        top_p=top_p,)
+        top_p=top_p,
+    )
     return response.text
-
-
-

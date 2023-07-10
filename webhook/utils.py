@@ -15,10 +15,11 @@
 import datetime
 import re
 
-ABSTRACT_LENGTH = 150 * 10    # Abstract recommended max word length * avg 10 letters long
+ABSTRACT_LENGTH = 150 * 10  # Abstract recommended max word length * avg 10 letters long
 CONCLUSION_LENGTH = 200 * 10  # Conclusion max word legnth * avg 10 letters long
-ABSTRACT_H1 = 'abstract'
-CONCLUSION_H1 = 'conclusion'
+ABSTRACT_H1 = "abstract"
+CONCLUSION_H1 = "conclusion"
+
 
 def coerce_datetime_zulu(input_datetime: datetime.datetime):
     """Force datetime into specific format.
@@ -32,9 +33,9 @@ def coerce_datetime_zulu(input_datetime: datetime.datetime):
     if regex_match:
         assert input_datetime.startswith(regex_match.group(1))
         assert input_datetime.endswith(regex_match.group(2))
-        return datetime.datetime.fromisoformat(f'{input_datetime[:-1]}+00:00')
+        return datetime.datetime.fromisoformat(f"{input_datetime[:-1]}+00:00")
     raise RuntimeError(
-        'The input datetime is not in the expected format. '
+        "The input datetime is not in the expected format. "
         'Please check format of the input datetime. Expected "Z" at the end'
     )
 
@@ -63,6 +64,6 @@ def truncate_complete_text(complete_text: str) -> str:
 
     return f"""
     Abstract: {abstract}
-    
+
     Conclusion: {conclusion}
     """

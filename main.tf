@@ -98,6 +98,7 @@ resource "google_service_account" "webhook" {
 resource "google_project_iam_member" "webhook_sa_roles" {
   project = var.project_id
   for_each = toset([
+    "roles/run.invoker",
     "roles/cloudfunctions.invoker",
     "roles/storage.admin",
     "roles/logging.logWriter",

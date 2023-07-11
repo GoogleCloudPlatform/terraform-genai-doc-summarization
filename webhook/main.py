@@ -100,28 +100,33 @@ def redirect_and_reply(previous_data):
     except Exception:
         return flask.Response(status=500)
     return flask.Response(status=200)
-    
+
 
 def entrypoint(request: object) -> dict[str, str]:
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
         # Entrypoint called by Pub-Sub (Eventarc)
         return redirect_and_reply(data)
-    else:
-        if 'bucket' in data:
-            return cloud_event_entrypoint(
-                name=data["name"],
-                event_id=data["id"],
-                bucket=data["bucket"],
-                time_created=coerce_datetime_zulu(data["timeCreated"]),
-            )
-        elif "text" in data:
-            return summarization_entrypoint(
-                name=data["name"],
-                extracted_text=data["text"],
-                time_created=datetime.datetime.now(datetime.timezone.utc),
-                event_id="CURL_TRIGGER",
-            )
+
+    if 'bucket' in data:
+        # Entrypoint called by REST (possibly by redirect_and_replay)
+        return cloud_event_entrypoint(
+            name=data["name"],
+            event_id=data["id"],
+            bucket=data["bucket"],
+            time_created=coerce_datetime_zulu(data["timeCreated"]),
+        )
+
+    if "text" in data:
+        # Entrypoint called by REST.
+        return summarization_entrypoint(
+            name=data["name"],
+            extracted_text=data["text"],
+            time_created=datetime.datetime.now(datetime.timezone.utc),
+            event_id="CURL_TRIGGER",
+        )
+
+    return flask.Response(status=500)
 
 
 def cloud_event_entrypoint(event_id, bucket, name, time_created):

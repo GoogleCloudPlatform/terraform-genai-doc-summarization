@@ -17,6 +17,10 @@ import os
 from google.cloud import logging
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
+import google.auth.transport.requests
+import google.oauth2.id_token
+import requests
+import flask
 
 from bigquery import write_summarization_to_table
 from document_extract import async_document_extract
@@ -68,22 +72,61 @@ def summarize_text(text: str, parameters: None | dict[str, int | float] = None) 
     return response.text
 
 
+def redirect_and_reply(previous_data):
+    endpoint = f'https://{_LOCATION}-{_PROJECT_ID}.cloudfunctions.net/{os.environ["K_SERVICE"]}'
+    logging_client = logging.Client()
+    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
+
+    auth_req = google.auth.transport.requests.Request()
+    id_token = google.oauth2.id_token.fetch_id_token(auth_req, endpoint)
+    data = {
+        'name': previous_data["name"],
+        'id': previous_data["id"],
+        'bucket': previous_data["bucket"],
+        'timeCreated': previous_data["timeCreated"],
+    }
+    headers = {}
+    headers["Authorization"] = f"Bearer {id_token}"
+    logger.log(f'TRIGGERING JOB FLOW: {endpoint}')
+    try:
+        requests.post(
+            endpoint,
+            json=data,
+            timeout=1,
+            headers=headers,
+        )
+    except requests.exceptions.Timeout:
+        return flask.Response(status=200)
+    except Exception:
+        return flask.Response(status=500)
+    return flask.Response(status=200)
+
+
 def entrypoint(request: object) -> dict[str, str]:
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
+        # Entrypoint called by Pub-Sub (Eventarc)
+        return redirect_and_reply(data)
+
+    if 'bucket' in data:
+        # Entrypoint called by REST (possibly by redirect_and_replay)
         return cloud_event_entrypoint(
             name=data["name"],
             event_id=data["id"],
             bucket=data["bucket"],
             time_created=coerce_datetime_zulu(data["timeCreated"]),
         )
-    else:
+
+    if "text" in data:
+        # Entrypoint called by REST.
         return summarization_entrypoint(
             name=data["name"],
             extracted_text=data["text"],
             time_created=datetime.datetime.now(datetime.timezone.utc),
             event_id="CURL_TRIGGER",
         )
+
+    return flask.Response(status=500)
 
 
 def cloud_event_entrypoint(event_id, bucket, name, time_created):

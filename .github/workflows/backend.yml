@@ -38,12 +38,12 @@ jobs:
 
     steps:
       # TODO: Replace following with the correct credentials
-      - uses: 'google-github-actions/auth@v1.1.1'
-        with:
-          workload_identity_provider: 'projects/1046198160504/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
-          service_account: 'kokoro-system-test@long-door-651.iam.gserviceaccount.com'
-          create_credentials_file: 'true'
-          access_token_lifetime: 600s
+      #- uses: 'google-github-actions/auth@v1.1.1'
+      #  with:
+      #    workload_identity_provider: 'projects/1046198160504/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+      #    service_account: 'kokoro-system-test@long-door-651.iam.gserviceaccount.com'
+      #    create_credentials_file: 'true'
+      #    access_token_lifetime: 600s
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+          pip install -r requirements-text.txt
         working-directory: webhook
 
       - name: Run Pytest

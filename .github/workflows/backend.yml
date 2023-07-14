@@ -37,13 +37,12 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-      # TODO: Replace following with the correct credentials
-      #- uses: 'google-github-actions/auth@v1.1.1'
-      #  with:
-      #    workload_identity_provider: 'projects/1046198160504/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
-      #    service_account: 'kokoro-system-test@long-door-651.iam.gserviceaccount.com'
-      #    create_credentials_file: 'true'
-      #    access_token_lifetime: 600s
+      - uses: 'google-github-actions/auth@v1.1.1'
+        with:
+          workload_identity_provider: 'principalSet://iam.googleapis.com/projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool/*'
+          service_account: 'github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com'
+          create_credentials_file: 'true'
+          access_token_lifetime: 600s
 
       - name: Checkout repository
         uses: actions/checkout@v3

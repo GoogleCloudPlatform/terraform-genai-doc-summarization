@@ -36,6 +36,11 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
 
+    env:
+      PROJECT_ID: jss-16p1-test
+      LOCATION: us-central1
+      BUCKET: jss-16p1-test-bucket
+
     steps:
       - uses: 'google-github-actions/auth@v1.1.1'
         with:

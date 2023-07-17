@@ -1,6 +1,6 @@
 module github.com/terraform-google-modules/gen-ai-document-summarization/test/integration
 
-go 1.18
+go 1.20
 
 require (
 	github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.5.0

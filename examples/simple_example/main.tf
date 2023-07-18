@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-resource "random_id" "id" {
-  byte_length = 4
-}
-
 module "simple" {
   source       = "../../"
   project_id   = var.project_id
   webhook_path = abspath("../../webhook")
-  bucket_name  = "cft-test-${random_id.id.hex}"
 }

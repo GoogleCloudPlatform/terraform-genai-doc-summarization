@@ -75,9 +75,6 @@ resource "time_sleep" "wait_for_apis" {
 }
 
 resource "random_uuid" "rand" {
-  length           = 16
-  special          = true
-  override_special = "/@£$"
 }
 
 data "archive_file" "webhook" {

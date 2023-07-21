@@ -41,10 +41,17 @@ jobs:
       LOCATION: us-central1
       BUCKET: jss-16p1-test-bucket
 
+    # Need to add these 3 lines to add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
-      - uses: 'google-github-actions/auth@v1.1.1'
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1.1.1'
         with:
-          workload_identity_provider: 'principalSet://iam.googleapis.com/projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool/*'
+          workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
           service_account: 'github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com'
           create_credentials_file: 'true'
           access_token_lifetime: 600s

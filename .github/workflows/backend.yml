@@ -47,11 +47,15 @@ jobs:
       id-token: 'write'
 
     steps:
+      - id: 'checkout'
+        name: 'Checkout repo'
+        uses: 'actions/checkout@v3'
+
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1.1.1'
         with:
-          workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+          workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider'
           service_account: 'github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com'
           create_credentials_file: 'true'
           access_token_lifetime: 600s

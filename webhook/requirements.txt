@@ -13,11 +13,14 @@
 # limitations under the License.
 
 flask==2.3.2
-functions-framework==3.3.0
-google-auth==2.17.3
-google-cloud-aiplatform[pipelines]==1.25.0
-google-cloud-bigquery==3.10.0
+# pyyaml installation is broken due to cython issues
+# https://github.com/yaml/pyyaml/issues/724
+pyyaml==5.3.1
+functions-framework==3.4.0
+google-auth==2.22.0
+google-cloud-aiplatform[pipelines]==1.28.1
+google-cloud-bigquery==3.11.3
 google-cloud-logging==3.5.0
-google-cloud-storage==2.9.0
-google-cloud-vision==3.4.1
+google-cloud-storage==2.10.0
+google-cloud-vision==3.4.4
 requests==2.31.0

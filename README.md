@@ -40,7 +40,7 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | The name of the bucket to create | `string` | `"genai-doc-summary-webhook-1234"` | no |
+| bucket\_name | The name of the bucket to create | `string` | `"genai-doc-summary-webhook"` | no |
 | gcf\_timeout\_seconds | GCF execution timeout | `number` | `900` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | Google Cloud region | `string` | `"us-central1"` | no |

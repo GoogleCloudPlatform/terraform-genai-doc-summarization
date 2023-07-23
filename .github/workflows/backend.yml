@@ -40,11 +40,17 @@ jobs:
       PROJECT_ID: jss-16p1-test
       LOCATION: us-central1
       BUCKET: jss-16p1-test-bucket
+      ACTIONS_RUNNER_DEBUG: true
+      ACTIONS_STEP_DEBUG: true
 
     # Need to add these 3 lines to add "id-token" with the intended permissions.
     permissions:
       contents: 'read'
       id-token: 'write'
+
+    defaults:
+      run:
+        working-directory: 'webhook'
 
     steps:
       - id: 'checkout'
@@ -57,11 +63,7 @@ jobs:
         with:
           workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider'
           service_account: 'github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com'
-          create_credentials_file: 'true'
-          access_token_lifetime: 600s
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
+          token_format: 'access_token'
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3

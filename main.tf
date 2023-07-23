@@ -35,6 +35,7 @@ module "project_services" {
     "run.googleapis.com",
     "iam.googleapis.com",
     "notebooks.googleapis.com",
+    "dataform.googleapis.com",
   ]
 }
 

@@ -50,28 +50,6 @@ def default_marshaller(o: object) -> str:
     return str(o)
 
 
-def summarize_text(text: str, parameters: None | dict[str, int | float] = None) -> str:
-    """Summarization Example with a Large Language Model"""
-    vertexai.init(
-        project=_PROJECT_ID,
-        location=_LOCATION,
-    )
-
-    final_parameters = _DEFAULT_PARAMETERS.copy()
-    if parameters:
-        final_parameters.update(parameters)
-
-    model = TextGenerationModel.from_pretrained("text-bison@001")
-    response = model.predict(
-        f"Provide a summary with about two sentences for the following article: {text}\n"
-        "Summary:",
-        **final_parameters,
-    )
-    print(f"Response from Model: {response.text}")
-
-    return response.text
-
-
 def redirect_and_reply(previous_data):
     endpoint = f'https://{_LOCATION}-{_PROJECT_ID}.cloudfunctions.net/{os.environ["K_SERVICE"]}'
     logging_client = logging.Client()

@@ -34,6 +34,7 @@ module "project_services" {
     "cloudbuild.googleapis.com",
     "run.googleapis.com",
     "iam.googleapis.com",
+    "notebooks.googleapis.com",
   ]
 }
 

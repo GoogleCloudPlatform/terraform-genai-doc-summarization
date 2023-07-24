@@ -124,7 +124,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     entry_point = "entrypoint"
     source {
       storage_source {
-        bucket = "${var.bucket_name}-${random_uuid.rand.hex}"
+        bucket = "${var.bucket_name}-${random_id.rand.hex}"
         object = google_storage_bucket_object.webhook.name
       }
     }
@@ -227,7 +227,7 @@ resource "google_storage_bucket" "output" {
 
 resource "google_storage_bucket" "main" {
   project                     = var.project_id
-  name                        = "${var.bucket_name}-${random_uuid.rand.hex}"
+  name                        = "${var.bucket_name}-${random_id.rand.hex}"
   location                    = "US"
   uniform_bucket_level_access = true
 }

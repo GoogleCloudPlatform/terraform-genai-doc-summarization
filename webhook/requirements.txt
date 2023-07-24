@@ -15,7 +15,7 @@
 flask==2.3.2
 # pyyaml installation is broken due to cython issues
 # https://github.com/yaml/pyyaml/issues/724
-pyyaml==5.3.1
+pyyaml==6.0
 functions-framework==3.4.0
 google-auth==2.22.0
 google-cloud-aiplatform[pipelines]==1.28.1

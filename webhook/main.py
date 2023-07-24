@@ -15,7 +15,7 @@
 import datetime
 import os
 from google.cloud import logging
-from typing import Mapping, Type, Union
+from typing import Mapping
 import google.auth.transport.requests
 import google.oauth2.id_token
 import requests

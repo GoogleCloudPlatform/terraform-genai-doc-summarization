@@ -27,6 +27,11 @@ on:
     paths:
       - 'webhook/**'
       - '.github/workflows/backend.yml'
+  pull_request_target:
+    types: [labeled]
+    paths:
+      - 'webhook/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   pytest:

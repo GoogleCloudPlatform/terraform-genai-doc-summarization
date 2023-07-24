@@ -33,13 +33,12 @@ def predict_large_language_model(
       project_id (str): the Google Cloud project ID
       model_name (str): the name of the LLM model to use
       temperature (float): controls the randomness of predictions
-      max_decode_steps (int): TODO(nicain)
+      max_decode_steps (int): the maximum number of decode steps
       top_p (float): cumulative probability of parameter highest vocabulary tokens
       top_k (int): number of highest propbability vocabulary tokens to keep for top-k-filtering
       content (str): the text to summarize
       location (str): the Google Cloud region to run in
-      tuned_model_name (str): TODO(nicain)
-      credentials: TODO(nicain)
+      tuned_model_name (str): the LLM model to use
 
     Returns:
       The summarization of the content
@@ -48,7 +47,7 @@ def predict_large_language_model(
         project=project_id,
         location=location,
     )
-    print("FOO", vertexai.init)
+
     model = TextGenerationModel.from_pretrained(model_name)
     if tuned_model_name:
         model = model.get_tuned_model(tuned_model_name)

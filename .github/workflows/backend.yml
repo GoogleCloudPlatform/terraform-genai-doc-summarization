@@ -39,7 +39,7 @@ jobs:
     env:
       PROJECT_ID: jss-16p1-test
       REGION: us-central1
-      BUCKET: jss-16p1-test-bucket
+      BUCKET: jss-16p1-test_tests
       ACTIONS_RUNNER_DEBUG: true
       ACTIONS_STEP_DEBUG: true
 

@@ -16,8 +16,6 @@ import datetime
 import os
 from google.cloud import logging
 from typing import Mapping, Type, Union
-import vertexai
-from vertexai.preview.language_models import TextGenerationModel
 import google.auth.transport.requests
 import google.oauth2.id_token
 import requests
@@ -49,28 +47,6 @@ def default_marshaller(o: object) -> str:
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
     return str(o)
-
-
-def summarize_text(text: str, parameters: Type[Union[Mapping[str, str], None, float]]) -> str:
-    """Summarization Example with a Large Language Model"""
-    vertexai.init(
-        project=_PROJECT_ID,
-        location=_LOCATION,
-    )
-
-    final_parameters = _DEFAULT_PARAMETERS.copy()
-    if parameters:
-        final_parameters.update(parameters)
-
-    model = TextGenerationModel.from_pretrained("text-bison@001")
-    response = model.predict(
-        f"Provide a summary with about two sentences for the following article: {text}\n"
-        "Summary:",
-        **final_parameters,
-    )
-    print(f"Response from Model: {response.text}")
-
-    return response.text
 
 
 def redirect_and_reply(previous_data):

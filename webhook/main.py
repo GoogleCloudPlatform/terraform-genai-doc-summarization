@@ -15,6 +15,7 @@
 import datetime
 import os
 from google.cloud import logging
+from typing import Mapping, Type, Union
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 import google.auth.transport.requests
@@ -50,7 +51,7 @@ def default_marshaller(o: object) -> str:
     return str(o)
 
 
-def summarize_text(text: str, parameters: None | dict[str, int | float] = None) -> str:
+def summarize_text(text: str, parameters: Type[Union[Mapping[str, str], None, float]]) -> str:
     """Summarization Example with a Large Language Model"""
     vertexai.init(
         project=_PROJECT_ID,

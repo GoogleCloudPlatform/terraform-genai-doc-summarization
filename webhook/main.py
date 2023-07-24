@@ -15,8 +15,6 @@
 import datetime
 import os
 from google.cloud import logging
-import vertexai
-from vertexai.preview.language_models import TextGenerationModel
 import google.auth.transport.requests
 import google.oauth2.id_token
 import requests

@@ -15,6 +15,7 @@
 import datetime
 import os
 from google.cloud import logging
+from typing import Mapping
 import google.auth.transport.requests
 import google.oauth2.id_token
 import requests
@@ -78,7 +79,7 @@ def redirect_and_reply(previous_data):
     return flask.Response(status=200)
 
 
-def entrypoint(request: object) -> dict[str, str]:
+def entrypoint(request: object) -> Mapping[str, str]:
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
         # Entrypoint called by Pub-Sub (Eventarc)

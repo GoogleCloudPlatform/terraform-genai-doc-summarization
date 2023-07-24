@@ -74,7 +74,8 @@ resource "time_sleep" "wait_for_apis" {
   create_duration = var.time_to_enable_apis
 }
 
-resource "random_uuid" "rand" {
+resource "random_id" "rand" {
+  byte_length = 4
 }
 
 data "archive_file" "webhook" {
@@ -123,7 +124,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     entry_point = "entrypoint"
     source {
       storage_source {
-        bucket = "webhook-${random_uuid.rand.id}"
+        bucket = "${var.bucket_name}-${random_uuid.rand.hex}"
         object = google_storage_bucket_object.webhook.name
       }
     }
@@ -226,7 +227,7 @@ resource "google_storage_bucket" "output" {
 
 resource "google_storage_bucket" "main" {
   project                     = var.project_id
-  name                        = "webhook-${random_uuid.rand.id}"
+  name                        = "${var.bucket_name}-${random_uuid.rand.hex}"
   location                    = "US"
   uniform_bucket_level_access = true
 }

@@ -47,6 +47,8 @@ def truncate_complete_text(complete_text: str) -> str:
     For abstract: assumes beginning after the string `abstract` and extends for 6-7 sentences
     For conclusion: assumes beginning after the string `conclusion` and extends for 7-9 sentences
 
+    #56 : Improve this function
+
     Args:
         complete_text (str): the complete text of the academic paper
 

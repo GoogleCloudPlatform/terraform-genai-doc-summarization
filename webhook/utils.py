@@ -15,8 +15,8 @@
 import datetime
 import re
 
-ABSTRACT_LENGTH = 150 * 10  # Abstract recommended max word length * avg 10 letters long
-CONCLUSION_LENGTH = 200 * 10  # Conclusion max word legnth * avg 10 letters long
+ABSTRACT_LENGTH = 150 * 8  # Abstract recommended max word length * avg 8 letters long
+CONCLUSION_LENGTH = 200 * 8  # Conclusion max word length * avg 8 letters long
 ABSTRACT_H1 = "abstract"
 CONCLUSION_H1 = "conclusion"
 
@@ -54,8 +54,19 @@ def truncate_complete_text(complete_text: str) -> str:
         str: the truncated paper
     """
     complete_text = complete_text.lower()
+
     abstract_start = complete_text.find(ABSTRACT_H1)
+
+    # If no "Abstract" heading found, produce the entire text
+    if abstract_start == -1:
+        abstract_start = 0
+
     conclusion_start = complete_text.find(CONCLUSION_H1)
+
+    # If no "Conclusion" heading found, produce the last little bit
+    # of the text
+    if conclusion_start == -1:
+        conclusion_start = len(complete_text) - (CONCLUSION_LENGTH)
 
     abstract = complete_text[abstract_start:ABSTRACT_LENGTH]
     conclusion = complete_text[conclusion_start:]

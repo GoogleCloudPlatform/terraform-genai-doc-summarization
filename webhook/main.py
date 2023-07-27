@@ -157,7 +157,7 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         severity="INFO",
     )
 
-    extracted_text_trunc = truncate_complete_text(extracted_text)
+    extracted_text_trunc = truncate_complete_text(extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER)
     summary = predict_large_language_model(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,

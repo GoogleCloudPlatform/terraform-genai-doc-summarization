@@ -129,14 +129,22 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created):
 
 
 def summarization_entrypoint(
-    name,
-    extracted_text,
-    time_created,
-    bucket=None,
-    event_id=None,
-):
+    name: str,
+    extracted_text: str,
+    time_created: datetime.time,
+    bucket: str = None,
+    event_id: str = None,
+) -> str:
     logging_client = logging.Client()
     logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
+
+    if len(extracted_text) == 0:
+        logger.log(f"""cloud_event_id({event_id}): BAD INPUT
+No characters recognized from PDF and so the PDF cannot be
+summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
+'Conclusion' sections.
+                   """, severity="ERROR")
+        return ""
 
     complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
     upload_to_gcs(
@@ -149,7 +157,7 @@ def summarization_entrypoint(
         severity="INFO",
     )
 
-    extracted_text_trunc = truncate_complete_text(extracted_text)
+    extracted_text_trunc = truncate_complete_text(extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER)
     summary = predict_large_language_model(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,

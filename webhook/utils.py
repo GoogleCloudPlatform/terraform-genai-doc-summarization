@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from google.cloud import logging
 import datetime
 import re
 
@@ -19,6 +20,15 @@ ABSTRACT_LENGTH = 150 * 8  # Abstract recommended max word length * avg 8 letter
 CONCLUSION_LENGTH = 200 * 8  # Conclusion max word length * avg 8 letters long
 ABSTRACT_H1 = "abstract"
 CONCLUSION_H1 = "conclusion"
+
+CONTENT_ERROR_MESSAGE = """
+Uploaded PDF doesn't contain an abstract or conclusion paragraph. The
+document summarization pipeline will attempt a best effort at summarizing
+the PDF. Your results might vary in quality.
+
+For best results, use a single-column, academic paper that contains both
+a labeled 'Abstract' and 'Conclusion' section.
+"""
 
 
 def coerce_datetime_zulu(input_datetime: datetime.datetime):
@@ -40,7 +50,7 @@ def coerce_datetime_zulu(input_datetime: datetime.datetime):
     )
 
 
-def truncate_complete_text(complete_text: str) -> str:
+def truncate_complete_text(complete_text: str, logger_name: str) -> str:
     """Extracts the abstract and conclusion from an academic paper.
 
     Uses a heuristics to approximate the extent of the abstract and conclusion.
@@ -56,12 +66,12 @@ def truncate_complete_text(complete_text: str) -> str:
         str: the truncated paper
     """
     complete_text = complete_text.lower()
-
     abstract_start = complete_text.find(ABSTRACT_H1)
 
     # If no "Abstract" heading found, produce the entire text
     if abstract_start == -1:
         abstract_start = 0
+        log_content_error(logger_name=logger_name)
 
     conclusion_start = complete_text.find(CONCLUSION_H1)
 
@@ -69,6 +79,7 @@ def truncate_complete_text(complete_text: str) -> str:
     # of the text
     if conclusion_start == -1:
         conclusion_start = len(complete_text) - (CONCLUSION_LENGTH)
+        log_content_error(logger_name=logger_name)
 
     abstract = complete_text[abstract_start:ABSTRACT_LENGTH]
     conclusion = complete_text[conclusion_start:]
@@ -80,3 +91,9 @@ def truncate_complete_text(complete_text: str) -> str:
 
     Conclusion: {conclusion}
     """
+
+
+def log_content_error(logger_name: str):
+    logging_client = logging.Client()
+    logger = logging_client.logger(logger_name)
+    logger.log(CONTENT_ERROR_MESSAGE, severity="WARNING")

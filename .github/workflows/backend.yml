@@ -93,8 +93,8 @@ jobs:
       - name: Run Pytest (unit tests)
         run: |
           source venv/bin/activate
-          pytest
-        working-directory: webhook/unit_tests
+          pytest unit_tests/*.py
+        working-directory: webhook
         env:
           PYTHONPATH: ${{ github.workspace }}/webhook/
 
@@ -102,7 +102,7 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         run: |
           source venv/bin/activate
-          pytest
-        working-directory: webhook/integration_tests
+          pytest integration_tests/*.py
+        working-directory: webhook
         env:
           PYTHONPATH: ${{ github.workspace }}/webhook/

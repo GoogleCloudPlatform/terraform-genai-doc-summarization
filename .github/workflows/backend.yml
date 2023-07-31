@@ -32,6 +32,8 @@ on:
     paths:
       - 'webhook/**'
       - '.github/workflows/backend.yml'
+  schedule: # Run tests every day at UTC 9:00A
+    - cron: '0 9 * * *'
 
 jobs:
   pytest:

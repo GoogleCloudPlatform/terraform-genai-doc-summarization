@@ -89,7 +89,7 @@ def test_write_summarization_bad_inputs():
 
     # Assert
     assert len(errors) == 1
-    assert type(errors[0]) == ValueError
+    assert isinstance(errors[0], ValueError)
 
 
 def test_write_summarization_no_row_data():
@@ -100,4 +100,4 @@ def test_write_summarization_no_row_data():
 
     # Assert
     assert len(errors) == 1
-    assert type(errors[0]) == ValueError
+    assert isinstance(errors[0], ValueError)

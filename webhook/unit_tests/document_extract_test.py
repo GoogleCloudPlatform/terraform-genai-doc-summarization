@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-import backoff
 import os
 from google.cloud import vision
 from google.api_core.operation import Operation
@@ -28,7 +26,6 @@ _FILE_NAME = "9404001v1.pdf"
 
 
 # System / integration test
-@pytest.mark.skip(reason="#55 : OCR takes too long and is flaky")
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_async_document_extract_system(capsys):
     out = document_extract.async_document_extract(

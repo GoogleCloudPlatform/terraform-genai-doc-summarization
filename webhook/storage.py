@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 
 from google.cloud import storage
 
@@ -28,3 +29,23 @@ def upload_to_gcs(bucket: str, name: str, data: str):
     bucket = client.get_bucket(bucket)
     blob = bucket.blob(name)
     blob.upload_from_string(data)
+
+
+def upload_tuning_data_to_gcs(bucket: str, name: str, tuning_dataset: list[dict]):
+    """Upload a string to Google Cloud Storage bucket.
+
+    Args:
+      bucket (str): the name of the Storage bucket. Do not include "gs://"
+      name (str): the name of the file to create in the bucket
+      tuning_dataset (list[dict]): the Q&A pair of tuning dataset to store
+
+    """
+    with open(name, 'w') as outfile:
+      for entry in tuning_dataset:
+          json.dump(entry, outfile)
+          outfile.write('\n')
+
+    client = storage.Client()
+    bucket = client.get_bucket(bucket)
+    blob = bucket.blob(name)
+    blob.upload_from_filename(name)

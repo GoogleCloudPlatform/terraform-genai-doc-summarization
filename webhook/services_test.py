@@ -16,15 +16,17 @@ import backoff
 import datetime
 import os
 
+from google.auth import default
 from google.cloud import storage
 
 from bigquery import write_summarization_to_table
 from document_extract import async_document_extract
+from model_tuning import tuning
 from storage import upload_to_gcs
-from utils import truncate_complete_text
-from vertex_llm import predict_large_language_model
+from utils import clean_text
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
+_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 _BUCKET_NAME = os.environ["BUCKET"]
 _OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _DATASET_ID = "summary_dataset"
@@ -60,19 +62,19 @@ def test_up16_services():
     assert check_blob_exists(_OUTPUT_BUCKET, complete_text_filename)
 
     # TODO(erschmid): replace truncate with better solution
-    extracted_text_ = truncate_complete_text(extracted_text, "test_logger")
-    summary = predict_large_language_model(
+    extracted_text_ = clean_text(extracted_text)
+    tuning_dataset = tuning(
+        credentials=_CREDENTIALS,
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,
         temperature=0.2,
         max_decode_steps=1024,
         top_p=0.8,
         top_k=40,
-        content=f"Summarize:\n{extracted_text_}",
+        text=extracted_text_,
         location="us-central1",
     )
-
-    assert summary != ""
+    assert tuning_dataset != ""
 
     output_filename = f'system-test/{_FILE_NAME.replace(".pdf", "")}_summary.txt'
     upload_to_gcs(

@@ -26,7 +26,7 @@ variable "project_id" {
 variable "bucket_name" {
   description = "The name of the bucket to create"
   type        = string
-  default     = "genai-webhook"
+  default     = "genai-doc-summary-webhook"
 }
 
 variable "region" {

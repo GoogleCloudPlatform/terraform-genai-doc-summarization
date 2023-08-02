@@ -83,7 +83,7 @@ spec:
     - name: bucket_name
       description: The name of the bucket to create
       varType: string
-      defaultValue: genai-webhook
+      defaultValue: genai-doc-summary-webhook-1234
     - name: gcf_timeout_seconds
       description: GCF execution timeout
       varType: number

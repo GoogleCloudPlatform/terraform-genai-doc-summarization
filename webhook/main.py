@@ -14,8 +14,10 @@
 
 import datetime
 import os
+from google.auth import default
 from google.cloud import logging
-from typing import Mapping
+import vertexai
+from vertexai.preview.language_models import TextGenerationModel
 import google.auth.transport.requests
 import google.oauth2.id_token
 import requests
@@ -23,15 +25,17 @@ import flask
 
 from bigquery import write_summarization_to_table
 from document_extract import async_document_extract
-from storage import upload_to_gcs
-from vertex_llm import predict_large_language_model
-from utils import coerce_datetime_zulu, truncate_complete_text
+from storage import upload_to_gcs, upload_tuning_data_to_gcs
+from utils import coerce_datetime_zulu, clean_text
+from model_tuning import tuning
+from results import compare_results
 
 _FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 _LOCATION = os.environ["LOCATION"]
+_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 _MODEL_NAME = "text-bison@001"
 _DEFAULT_PARAMETERS = {
     "temperature": 0.2,
@@ -47,6 +51,28 @@ def default_marshaller(o: object) -> str:
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
     return str(o)
+
+
+def summarize_text(text: str, parameters: None | dict[str, int | float] = None) -> str:
+    """Summarization Example with a Large Language Model"""
+    vertexai.init(
+        project=_PROJECT_ID,
+        location=_LOCATION,
+    )
+
+    final_parameters = _DEFAULT_PARAMETERS.copy()
+    if parameters:
+        final_parameters.update(parameters)
+
+    model = TextGenerationModel.from_pretrained("text-bison@001")
+    response = model.predict(
+        f"Provide a summary with about two sentences for the following article: {text}\n"
+        "Summary:",
+        **final_parameters,
+    )
+    print(f"Response from Model: {response.text}")
+
+    return response.text
 
 
 def redirect_and_reply(previous_data):
@@ -79,7 +105,7 @@ def redirect_and_reply(previous_data):
     return flask.Response(status=200)
 
 
-def entrypoint(request: object) -> Mapping[str, str]:
+def entrypoint(request: object) -> dict[str, str]:
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
         # Entrypoint called by Pub-Sub (Eventarc)
@@ -93,12 +119,10 @@ def entrypoint(request: object) -> Mapping[str, str]:
             bucket=data["bucket"],
             time_created=coerce_datetime_zulu(data["timeCreated"]),
         )
-
-    if "text" in data:
-        # Entrypoint called by REST.
-        return summarization_entrypoint(
-            name=data["name"],
-            extracted_text=data["text"],
+    else:
+        return extraction_entrypoint(
+            name=data['name'],
+            extracted_text=data['text'],
             time_created=datetime.datetime.now(datetime.timezone.utc),
             event_id="CURL_TRIGGER",
         )
@@ -119,7 +143,7 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created):
         f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}", severity="INFO"
     )
 
-    return summarization_entrypoint(
+    return extraction_entrypoint(
         name,
         extracted_text,
         time_created=time_created,
@@ -127,58 +151,64 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created):
         bucket=bucket,
     )
 
-
-def summarization_entrypoint(
-    name: str,
-    extracted_text: str,
-    time_created: datetime.time,
-    bucket: str = None,
-    event_id: str = None,
-) -> str:
+def extraction_entrypoint(
+        name,
+        extracted_text,
+        time_created,
+        bucket=None,
+        event_id=None,
+    ):
     logging_client = logging.Client()
     logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
 
-    if len(extracted_text) == 0:
-        logger.log(f"""cloud_event_id({event_id}): BAD INPUT
-No characters recognized from PDF and so the PDF cannot be
-summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
-'Conclusion' sections.
-                   """, severity="ERROR")
-        return ""
-
-    complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
+    output_filename = f'system-test/{name.replace(".pdf", "")}_tuning_dataset.txt'
+    extracted_text_cleaned = clean_text(extracted_text)
     upload_to_gcs(
         _OUTPUT_BUCKET,
-        complete_text_filename,
+        output_filename,
         extracted_text,
     )
-    logger.log(
-        f"cloud_event_id({event_id}): FULLTEXT_UPLOAD {complete_text_filename}",
-        severity="INFO",
-    )
+    logger.log(f"cloud_event_id({event_id}): EXTRACTION_UPLOAD {upload_to_gcs}",
+               severity="INFO")
 
-    extracted_text_trunc = truncate_complete_text(extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER)
-    summary = predict_large_language_model(
+    extracted_text_cleaned = """
+    Our quantum computers work by manipulating qubits in an orchestrated 
+    fashion that we call quantum algorithms. The challenge is that qubits 
+    are so sensitive that even stray light can cause calculation errors 
+    — and the problem worsens as quantum computers grow. This has significant 
+    consequences, since the best quantum algorithms that we know for running 
+    useful applications require the error rates of our qubits to be far lower 
+    than we have today. To bridge this gap, we will need quantum error correction. 
+    Quantum error correction protects information by encoding it across 
+    multiple physical qubits to form a “logical qubit,” and is believed to be 
+    the only way to produce a large-scale quantum computer with error rates 
+    low enough for useful calculations. Instead of computing on the individual 
+    qubits themselves, we will then compute on logical qubits. By encoding 
+    larger numbers of physical qubits on our quantum processor into one 
+    logical qubit, we hope to reduce the error rates to enable useful 
+    quantum algorithms.
+    """
+    tuning_dataset = tuning(
+        credentials=_CREDENTIALS,
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,
         temperature=0.2,
         max_decode_steps=1024,
         top_p=0.8,
         top_k=40,
-        content=f"Summarize:\n{extracted_text_trunc}",
+        text=extracted_text_cleaned,
         location="us-central1",
     )
-    logger.log(f"cloud_event_id({event_id}): SUMMARY_COMPLETE", severity="INFO")
+    logger.log(f"cloud_event_id({event_id}): TUNING_COMPLETE",
+            severity="INFO")
 
-    output_filename = f'system-test/{name.replace(".pdf", "")}_summary.txt'
     upload_to_gcs(
         _OUTPUT_BUCKET,
         output_filename,
-        summary,
+        tuning_dataset,
     )
-    logger.log(
-        f"cloud_event_id({event_id}): SUMMARY_UPLOAD {upload_to_gcs}", severity="INFO"
-    )
+    logger.log(f"cloud_event_id({event_id}): EXTRACTION_UPLOAD {upload_to_gcs}",
+               severity="INFO")
 
     # If we have any errors, they'll be caught by the bigquery module
     errors = write_summarization_to_table(
@@ -188,20 +218,20 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         bucket=bucket,
         filename=output_filename,
         complete_text=extracted_text,
-        complete_text_uri=complete_text_filename,
-        summary=summary,
+        complete_text_uri=output_filename,
+        summary=tuning_dataset,
         summary_uri=output_filename,
         timestamp=time_created,
     )
 
     if len(errors) > 0:
-        logger.log(
-            f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}", severity="ERROR"
-        )
+        logger.log(f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}",
+                   severity="ERROR")
         return errors
 
-    logger.log(f"cloud_event_id({event_id}): DB_WRITE", severity="INFO")
+    logger.log(f"cloud_event_id({event_id}): DB_WRITE",
+               severity="INFO")
 
     if errors:
         return errors
-    return {"summary": summary}
+    return {'tuning_dataset': tuning_dataset}

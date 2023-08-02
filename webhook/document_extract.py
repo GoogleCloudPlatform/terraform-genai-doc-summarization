@@ -69,7 +69,7 @@ def async_document_extract(
 
     operation = client.async_batch_annotate_files(requests=[async_request])
 
-    print("OCR: waiting for the operation to finish.")
+    print("Waiting for the operation to finish.")
     operation.result(timeout=timeout)
 
     # Once the request has completed and the output has been
@@ -84,8 +84,7 @@ def get_ocr_output_from_bucket(gcs_destination_uri: str, bucket_name: str) -> st
         gcs_destination_uri: the URI where the OCR output was saved.
         bucket_name: the name of the bucket where the output was saved.
 
-    Returns:
-        The full text of the document
+    Returns the full text of the document.
     """
     storage_client = storage.Client()
 

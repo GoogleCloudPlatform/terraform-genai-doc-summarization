@@ -90,7 +90,6 @@ def curl_request():
     return RequestMock()
 
 
-@pytest.mark.skip(reason='function under test fails without K_SERVICE env var')
 @mock.patch.dict(
     os.environ,
     {
@@ -109,7 +108,6 @@ def test_function_entrypoint_cloud_event(cloud_event):
     assert "summary" in result
 
 
-@pytest.mark.skip(reason='function under test fails without K_SERVICE env var')
 @mock.patch.dict(
     os.environ,
     {

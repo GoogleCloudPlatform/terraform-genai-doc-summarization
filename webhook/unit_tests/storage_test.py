@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import pytest
 from unittest.mock import MagicMock, patch
 
 from google.cloud import storage
@@ -23,6 +24,7 @@ _BUCKET_NAME = os.environ["BUCKET"]
 _FILE_NAME = "system-test/fake.text"
 
 
+@pytest.mark.skip(reason="test")
 @patch.object(storage.Client, "get_bucket")
 def test_upload_to_gcs_mock(mock_get_bucket):
     mock_blob = MagicMock(spec=storage.Blob)

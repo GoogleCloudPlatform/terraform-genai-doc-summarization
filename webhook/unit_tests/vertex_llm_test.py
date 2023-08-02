@@ -76,22 +76,6 @@ the compiled grammar.
 """
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_predict_large_language_model():
-    summary = predict_large_language_model(
-        project_id=_PROJECT_ID,
-        model_name=_MODEL_NAME,
-        temperature=0.2,
-        max_decode_steps=1024,
-        top_p=0.8,
-        top_k=40,
-        content=f"Summarize:\n{extracted_text}",
-        location="us-central1",
-    )
-
-    assert summary != ""
-
-
 @patch.object(vertexai, "init")
 @patch.object(TextGenerationModel, "from_pretrained")
 def test_predict_large_language_model_mock(mock_get_model, mock_init):

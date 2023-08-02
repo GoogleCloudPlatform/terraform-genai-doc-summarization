@@ -23,12 +23,15 @@ _BUCKET_NAME = os.environ["BUCKET"]
 _FILE_NAME = "system-test/fake.text"
 
 
+@patch.object(storage, "Client")
 @patch.object(storage.Client, "get_bucket")
-def test_upload_to_gcs_mock(mock_get_bucket):
+def test_upload_to_gcs_mock(mock_get_bucket, mock_client):
     mock_blob = MagicMock(spec=storage.Blob)
     mock_bucket = MagicMock(spec=storage.Bucket)
     mock_bucket.blob.return_value = mock_blob
     mock_get_bucket.return_value = mock_bucket
+    mock_client.get_bucket = mock_get_bucket
+
     bucket_name = "fake-bucket"
     blob_name = "fake-blob"
     data = "fake-data"

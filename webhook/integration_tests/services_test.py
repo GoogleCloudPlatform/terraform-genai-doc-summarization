@@ -60,7 +60,7 @@ def test_up16_services():
     assert check_blob_exists(_OUTPUT_BUCKET, complete_text_filename)
 
     # TODO(erschmid): replace truncate with better solution
-    extracted_text_ = truncate_complete_text(extracted_text)
+    extracted_text_ = truncate_complete_text(extracted_text, "test_logger")
     summary = predict_large_language_model(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,

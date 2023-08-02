@@ -30,8 +30,10 @@ on:
   pull_request_target:
     types: [labeled]
     paths:
-    - 'webhook/**'
-    - '.github/workflows/backend.yml'
+      - 'webhook/**'
+      - '.github/workflows/backend.yml'
+  schedule: # Run tests every day at UTC 9:00A
+    - cron: '0 9 * * *'
 
 jobs:
   pytest:
@@ -64,6 +66,7 @@ jobs:
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
+        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         uses: 'google-github-actions/auth@v1.1.1'
         with:
           workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider'
@@ -89,10 +92,19 @@ jobs:
           pip install -r requirements-test.txt
         working-directory: webhook
 
-      - name: Run Pytest
+      - name: Run Pytest (unit tests)
         run: |
           source venv/bin/activate
-          pytest
+          pytest unit_tests/*.py
         working-directory: webhook
         env:
-          PYTHONPATH: ${{ github.workspace }}/webhook
+          PYTHONPATH: ${{ github.workspace }}/webhook/
+
+      - name: Run Pytest (integration tests)
+        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
+        run: |
+          source venv/bin/activate
+          pytest integration_tests/*.py
+        working-directory: webhook
+        env:
+          PYTHONPATH: ${{ github.workspace }}/webhook/

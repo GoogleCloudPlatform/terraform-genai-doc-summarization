@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
 import os
 from unittest.mock import MagicMock, PropertyMock, patch
 

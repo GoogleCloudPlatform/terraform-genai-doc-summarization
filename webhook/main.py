@@ -134,7 +134,7 @@ def summarization_entrypoint(
     time_created: datetime.time,
     bucket: str = None,
     event_id: str = None,
-) -> str:
+) -> Mapping[str, str]:
     logging_client = logging.Client()
     logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
 
@@ -198,10 +198,8 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         logger.log(
             f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}", severity="ERROR"
         )
-        return errors
+        return {"errors": errors}
 
     logger.log(f"cloud_event_id({event_id}): DB_WRITE", severity="INFO")
 
-    if errors:
-        return errors
     return {"summary": summary}

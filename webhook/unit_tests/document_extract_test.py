@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from google.cloud import vision
 from google.api_core.operation import Operation
 from unittest.mock import MagicMock, patch
 
 import document_extract
 
-_PROJECT_ID = os.environ["PROJECT_ID"]
-_BUCKET_NAME = os.environ["BUCKET"]
-_OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
-_FILE_NAME = "9404001v1.pdf"
 
-
+@patch.object(vision, "ImageAnnotatorClient")
 @patch.object(vision.ImageAnnotatorClient, "async_batch_annotate_files")
 @patch.object(document_extract, "get_ocr_output_from_bucket")
-def test_async_document_extract(mock_get_output, mock_annotate):
+def test_async_document_extract(mock_get_output, mock_annotate, mock_client):
     want = "this is fake complete output"
     mock_annotate.return_value = MagicMock(spec=Operation)
     mock_get_output.return_value = want
+    mock_client().async_batch_annotate_files = mock_annotate
 
     bucket = "my-fake-bucket"
     name = "fake.pdf"

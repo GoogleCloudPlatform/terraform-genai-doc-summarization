@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
 import os
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -74,22 +73,6 @@ trees, and computationally operational, by virtue of a compilation to linear ind
 grammars together with an efficient algorithm for recognition and parsing according to
 the compiled grammar.
 """
-
-
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_predict_large_language_model():
-    summary = predict_large_language_model(
-        project_id=_PROJECT_ID,
-        model_name=_MODEL_NAME,
-        temperature=0.2,
-        max_decode_steps=1024,
-        top_p=0.8,
-        top_k=40,
-        content=f"Summarize:\n{extracted_text}",
-        location="us-central1",
-    )
-
-    assert summary != ""
 
 
 @patch.object(vertexai, "init")

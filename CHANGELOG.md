@@ -8,6 +8,13 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/compare/v0.1.0...v0.1.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* Update int.cloudbuild.yaml to use LR billing ([#61](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/61)) ([810c052](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/810c05202f35420616614cef57d7472151918750))
+
 ## 0.1.0 (2023-07-27)
 
 

@@ -12,17 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from unittest.mock import ANY, patch
 from datetime import datetime
 from google.cloud import bigquery
 
 from bigquery import write_summarization_to_table
-
-
-_DATASET_ID = "summary_dataset"
-_TABLE_ID = "summary_table"
-_PROJECT_ID = os.environ["PROJECT_ID"]
 
 bucket = "fake-bucket"
 filename = "fake-file-name"
@@ -33,9 +27,11 @@ complete_text_uri = "fake-complete-text/uri/"
 timestamp = datetime.now()
 
 
+@patch.object(bigquery, "Client")
 @patch.object(bigquery.Client, "insert_rows_json")
-def test_insert_rows_json(mock_insert_rows):
+def test_insert_rows_json(mock_insert_rows, mock_client):
     mock_insert_rows.return_value = []
+    mock_client().insert_rows_json = mock_insert_rows
 
     project_id = "project-name"
     dataset_id = "dataset-id"

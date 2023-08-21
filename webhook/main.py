@@ -157,6 +157,7 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         severity="INFO",
     )
 
+    prompt = 'Summarize:'
     extracted_text_trunc = truncate_complete_text(extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER)
     summary = predict_large_language_model(
         project_id=_PROJECT_ID,
@@ -165,7 +166,7 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         max_decode_steps=1024,
         top_p=0.8,
         top_k=40,
-        content=f"Summarize:\n{extracted_text_trunc}",
+        content=f"{prompt}\n{extracted_text_trunc}",
         location="us-central1",
     )
     logger.log(f"cloud_event_id({event_id}): SUMMARY_COMPLETE", severity="INFO")

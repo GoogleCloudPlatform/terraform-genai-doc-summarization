@@ -49,7 +49,7 @@ def extract_questions(
     model = TextGenerationModel.from_pretrained(model_name)
     print("This is the text for tuning"+text)
     response = model.predict(
-        f"Extract at least 20 Questions based on the following article: {text}\nQuestions:",
+        f"""Extract at least 20 Questions based on the following article: {text}\nQuestions:""",
         temperature=temperature,
         max_output_tokens=max_decode_steps,
         top_k=top_k,

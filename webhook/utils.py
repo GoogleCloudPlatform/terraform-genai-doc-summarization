@@ -53,8 +53,7 @@ def clean_text(original_text: str) -> str:
     Returns
         str: the truncated paper
     """
-    clean_text = original_text.lower()
 
     return f"""
-    Text: {clean_text}
+    Text: {original_text}
     """

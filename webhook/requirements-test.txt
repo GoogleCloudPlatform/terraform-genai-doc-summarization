@@ -1,4 +1,4 @@
 backoff==2.2.1
 mock
-pytest==7.4.0
+pytest==7.4.3
 google-cloud-storage

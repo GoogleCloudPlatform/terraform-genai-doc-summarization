@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-flask==2.3.2
+flask==2.3.3
 functions-framework==3.4.0
 google-auth==2.22.0
-google-cloud-aiplatform[pipelines]==1.28.1
+google-cloud-aiplatform[pipelines]==1.36.0
 google-cloud-bigquery==3.11.4
 google-cloud-logging==3.6.0
 google-cloud-storage==2.10.0

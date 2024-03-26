@@ -19,31 +19,23 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = ">= 4.66, < 5.22"
+      version = "~> 5.8"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 4.70"
+      version = "~> 5.8"
     }
     archive = {
       source  = "hashicorp/archive"
-      version = ">= 2"
-    }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.11.0"
+      version = "~> 2.4"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.4"
+      version = "~> 3.5"
     }
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/gen-ai-document-summarization/v0.1.1"
+    module_name = "blueprints/terraform/genai-knowledge-base/v0.1.1"
   }
 }

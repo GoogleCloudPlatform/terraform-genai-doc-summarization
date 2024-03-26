@@ -14,47 +14,50 @@
  * limitations under the License.
  */
 
+# Jump Start Solution variables.
 variable "project_id" {
   description = "The Google Cloud project ID to deploy to"
   type        = string
   validation {
     condition     = var.project_id != ""
-    error_message = "Error: project_id is required"
+    error_message = "Error: project_id is required."
   }
 }
 
-variable "bucket_name" {
-  description = "The name of the bucket to create"
-  type        = string
-  default     = "genai-webhook"
-}
-
 variable "region" {
-  description = "Google Cloud region"
+  description = "The Google Cloud region to deploy to"
   type        = string
   default     = "us-central1"
 }
 
-variable "webhook_name" {
-  description = "Name of the webhook"
+# Optional variables
+variable "documentai_location" {
+  description = "Document AI location, see https://cloud.google.com/document-ai/docs/regions"
   type        = string
-  default     = "webhook"
+  default     = "us"
 }
 
+variable "firestore_location" {
+  description = "Firestore location, see https://firebase.google.com/docs/firestore/locations"
+  type        = string
+  default     = "nam5" # US
+}
+
+variable "disable_services_on_destroy" {
+  description = "Whether project services will be disabled when the resources are destroyed."
+  type        = bool
+  default     = false
+}
+
+# Used for testing.
 variable "webhook_path" {
-  description = "Path to the webhook directory"
+  description = "Path to the webhook source directory"
   type        = string
   default     = "webhook"
 }
 
-variable "gcf_timeout_seconds" {
-  description = "GCF execution timeout"
-  type        = number
-  default     = 900
-}
-
-variable "time_to_enable_apis" {
-  description = "Wait time to enable APIs in new projects"
-  type        = string
-  default     = "180s"
+variable "unique_names" {
+  description = "Whether to use unique names for resources"
+  type        = bool
+  default     = true
 }

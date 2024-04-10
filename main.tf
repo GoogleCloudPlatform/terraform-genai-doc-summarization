@@ -57,13 +57,6 @@ locals {
   bq_table_name      = var.unique_names ? "summary-table-${random_id.unique_id.hex}" : "summary-table"
 }
 
-data "google_project" "project" {
-  project_id = var.project_id
-  depends_on = [
-    module.project_services,
-  ]
-}
-
 #-- Cloud Storage buckets --#
 resource "google_storage_bucket" "main" {
   project                     = module.project_services.project_id

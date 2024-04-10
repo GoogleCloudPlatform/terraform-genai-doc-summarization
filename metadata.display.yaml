@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,9 +30,18 @@ spec:
         bucket_name:
           name: bucket_name
           title: Bucket Name
+        disable_services_on_destroy:
+          name: disable_services_on_destroy
+          title: Disable Services On Destroy
+        documentai_location:
+          name: documentai_location
+          title: Documentai Location
         gcf_timeout_seconds:
           name: gcf_timeout_seconds
           title: GCF Timeout Seconds
+        labels:
+          name: labels
+          title: Labels
         project_id:
           name: project_id
           title: Project Id
@@ -42,6 +51,9 @@ spec:
         time_to_enable_apis:
           name: time_to_enable_apis
           title: Time To Enable Apis
+        unique_names:
+          name: unique_names
+          title: Unique Names
         webhook_name:
           name: webhook_name
           title: Webhook Name

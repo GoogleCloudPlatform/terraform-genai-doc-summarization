@@ -40,20 +40,23 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | The name of the bucket to create | `string` | `"genai-webhook"` | no |
-| gcf\_timeout\_seconds | GCF execution timeout | `number` | `900` | no |
+| disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
+| documentai\_location | Document AI location, see https://cloud.google.com/document-ai/docs/regions | `string` | `"us"` | no |
+| labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
-| region | Google Cloud region | `string` | `"us-central1"` | no |
-| time\_to\_enable\_apis | Wait time to enable APIs in new projects | `string` | `"180s"` | no |
-| webhook\_name | Name of the webhook | `string` | `"webhook"` | no |
-| webhook\_path | Path to the webhook directory | `string` | `"webhook"` | no |
+| region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `true` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
+| bigquery\_dataset\_name | The name of the BigQuery dataset created |
+| bucket\_docs\_name | The name of the docs bucket created |
+| bucket\_main\_name | The name of the main bucket created |
+| documentai\_processor\_id | The full Document AI processor path ID |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
+| unique\_id | The unique ID for this deployment |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

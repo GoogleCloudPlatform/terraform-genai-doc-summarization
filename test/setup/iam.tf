@@ -16,19 +16,14 @@
 
 locals {
   int_required_roles = [
-    "roles/aiplatform.admin",
-    "roles/artifactregistry.reader",
+    "roles/aiplatform.user",
+    "roles/artifactregistry.admin",
     "roles/bigquery.admin",
-    "roles/cloudfunctions.admin",
-    "roles/eventarc.admin",
+    "roles/documentai.editor",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
-    "roles/logging.admin",
-    "roles/pubsub.admin",
     "roles/resourcemanager.projectIamAdmin",
-    "roles/run.admin",
     "roles/serviceusage.serviceUsageAdmin",
-    "roles/storage.admin",
   ]
 }
 

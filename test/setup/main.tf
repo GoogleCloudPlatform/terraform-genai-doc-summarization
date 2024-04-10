@@ -16,7 +16,7 @@
 
 module "project" {
   source  = "terraform-google-modules/project-factory/google"
-  version = "~> 14.0"
+  version = "~> 14.5"
 
   name              = "ci-genai-doc-summary"
   random_project_id = "true"
@@ -31,12 +31,10 @@ module "project" {
     "cloudbuild.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "documentai.googleapis.com",
     "eventarc.googleapis.com",
-    "iam.googleapis.com",
     "run.googleapis.com",
     "serviceusage.googleapis.com",
-    "storage-api.googleapis.com",
     "storage.googleapis.com",
-    "vision.googleapis.com",
   ]
 }

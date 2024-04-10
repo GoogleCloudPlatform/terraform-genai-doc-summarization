@@ -16,27 +16,45 @@
 
 module "project_services" {
   source                      = "terraform-google-modules/project-factory/google//modules/project_services"
-  version                     = "~> 14.2"
-  disable_services_on_destroy = false
+  version                     = "~> 14.5"
+  disable_services_on_destroy = var.disable_services_on_destroy
 
   project_id = var.project_id
 
   activate_apis = [
-    "serviceusage.googleapis.com",
-    "vision.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "serviceusage.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "eventarc.googleapis.com",
-    "bigquery.googleapis.com",
     "aiplatform.googleapis.com",
-    "storage.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "bigquery.googleapis.com",
     "cloudbuild.googleapis.com",
-    "run.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
+    "config.googleapis.com",
+    "documentai.googleapis.com",
+    "eventarc.googleapis.com",
     "iam.googleapis.com",
-    "notebooks.googleapis.com",
-    "dataform.googleapis.com",
+    "run.googleapis.com",
+    "serviceusage.googleapis.com",
+    "storage-api.googleapis.com",
+    "storage.googleapis.com",
   ]
+}
+
+resource "random_id" "unique_id" {
+  byte_length = 3
+}
+
+locals {
+  bucket_main_name   = var.unique_names ? "summary-main-${var.project_id}-${random_id.unique_id.hex}" : "summary-main-${var.project_id}"
+  bucket_docs_name   = var.unique_names ? "summary-docs-${var.project_id}-${random_id.unique_id.hex}" : "summary-docs-${var.project_id}"
+  webhook_name       = var.unique_names ? "summary-webhook-${random_id.unique_id.hex}" : "summary-webhook"
+  webhook_sa_name    = var.unique_names ? "summary-webhook-sa-${random_id.unique_id.hex}" : "summary-webhook-sa"
+  artifact_repo_name = var.unique_names ? "summary-artifact-repo-${random_id.unique_id.hex}" : "summary-artifact-repo"
+  trigger_name       = var.unique_names ? "summary-trigger-${random_id.unique_id.hex}" : "summary-trigger"
+  trigger_sa_name    = var.unique_names ? "summary-trigger-sa-${random_id.unique_id.hex}" : "summary-trigger-sa"
+  ocr_processor_name = var.unique_names ? "summary-ocr-processor-${random_id.unique_id.hex}" : "summary-ocr-processor"
+  bq_dataset_name    = var.unique_names ? "summary-dataset-${random_id.unique_id.hex}" : "summary-dataset"
+  bq_table_name      = var.unique_names ? "summary-table-${random_id.unique_id.hex}" : "summary-table"
 }
 
 data "google_project" "project" {
@@ -46,258 +64,183 @@ data "google_project" "project" {
   ]
 }
 
-resource "google_project_service_identity" "eventarc" {
-  provider = google-beta
-
-  project = data.google_project.project.project_id
-  service = "eventarc.googleapis.com"
-
-  depends_on = [
-    module.project_services,
-  ]
+#-- Cloud Storage buckets --#
+resource "google_storage_bucket" "main" {
+  project                     = module.project_services.project_id
+  name                        = local.bucket_main_name
+  location                    = var.region
+  force_destroy               = true
+  uniform_bucket_level_access = true
+  labels                      = var.labels
 }
 
-resource "google_project_iam_member" "eventarc_sa_role" {
-  project = data.google_project.project.project_id
-  role    = "roles/eventarc.serviceAgent"
-  member  = "serviceAccount:${google_project_service_identity.eventarc.email}"
+resource "google_storage_bucket" "docs" {
+  project                     = module.project_services.project_id
+  name                        = local.bucket_docs_name
+  location                    = var.region
+  force_destroy               = true
+  uniform_bucket_level_access = true
+  labels                      = var.labels
 }
 
-resource "null_resource" "previous_time" {}
-
-# Gate till APIs are enabled
-resource "time_sleep" "wait_for_apis" {
-  depends_on = [
-    null_resource.previous_time,
-    module.project_services,
-    google_project_iam_member.eventarc_sa_role,
-  ]
-
-  create_duration = var.time_to_enable_apis
-}
-
-resource "random_id" "rand" {
-  byte_length = 4
-}
-
-data "archive_file" "webhook" {
-  type        = "zip"
-  source_dir  = var.webhook_path
-  output_path = abspath("./.tmp/${var.webhook_name}.zip")
-}
-
-resource "google_storage_bucket_object" "webhook" {
-  name   = "${var.webhook_name}.${data.archive_file.webhook.output_base64sha256}.zip"
-  bucket = google_storage_bucket.main.name
-  source = data.archive_file.webhook.output_path
-}
-
-resource "google_service_account" "webhook" {
-  project      = var.project_id
-  account_id   = "webhook-service-account"
-  display_name = "Serverless Webhooks Service Account"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "google_project_iam_member" "webhook_sa_roles" {
-  project = var.project_id
-  for_each = toset([
-    "roles/run.invoker",
-    "roles/cloudfunctions.invoker",
-    "roles/storage.admin",
-    "roles/logging.logWriter",
-    "roles/artifactregistry.reader",
-    "roles/bigquery.dataEditor",
-    "roles/aiplatform.user",
-  ])
-  role   = each.key
-  member = "serviceAccount:${google_service_account.webhook.email}"
-}
-
+#-- Cloud Function webhook --#
 resource "google_cloudfunctions2_function" "webhook" {
-  project  = var.project_id
-  name     = var.webhook_name
+  project  = module.project_services.project_id
+  name     = local.webhook_name
   location = var.region
+  labels   = var.labels
 
   build_config {
-    runtime     = "python310"
-    entry_point = "entrypoint"
+    runtime           = "python312"
+    entry_point       = "on_cloud_event"
+    docker_repository = google_artifact_registry_repository.webhook_images.id
     source {
       storage_source {
-        bucket = "${var.bucket_name}-${random_id.rand.hex}"
-        object = google_storage_bucket_object.webhook.name
+        bucket = google_storage_bucket.main.name
+        object = google_storage_bucket_object.webhook_staging.name
       }
     }
   }
 
-
   service_config {
-    service_account_email            = google_service_account.webhook.email
-    max_instance_count               = 5
-    available_memory                 = "4G"
-    available_cpu                    = 1
-    max_instance_request_concurrency = 5
-    timeout_seconds                  = var.gcf_timeout_seconds
+    service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID    = var.project_id
-      LOCATION      = var.region
-      OUTPUT_BUCKET = google_storage_bucket.output.name
-      DATASET_ID    = google_bigquery_dataset.default.dataset_id
-      TABLE_ID      = google_bigquery_table.default.table_id
+      PROJECT_ID        = module.project_services.project_id
+      VERTEXAI_LOCATION = var.region
+      OUTPUT_BUCKET     = google_storage_bucket.main.name
+      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
+      BQ_DATASET        = google_bigquery_dataset.main.dataset_id
+      BQ_TABLE          = google_bigquery_table.main.table_id
     }
   }
-  depends_on = [
-    module.project_services,
-    time_sleep.wait_for_apis,
-    google_project_iam_member.webhook_sa_roles,
+}
 
+resource "google_project_iam_member" "webhook" {
+  project = module.project_services.project_id
+  member  = google_service_account.webhook.member
+  for_each = toset([
+    "roles/aiplatform.serviceAgent", # https://cloud.google.com/iam/docs/service-agents
+    "roles/bigquery.dataEditor",     # https://cloud.google.com/bigquery/docs/access-control
+    "roles/documentai.apiUser",      # https://cloud.google.com/document-ai/docs/access-control/iam-roles
+  ])
+  role = each.key
+}
+
+resource "google_service_account" "webhook" {
+  project      = module.project_services.project_id
+  account_id   = local.webhook_sa_name
+  display_name = "Doc summary webhook"
+}
+
+resource "google_artifact_registry_repository" "webhook_images" {
+  project       = module.project_services.project_id
+  location      = var.region
+  repository_id = local.artifact_repo_name
+  format        = "DOCKER"
+  labels        = var.labels
+}
+
+data "archive_file" "webhook_staging" {
+  type        = "zip"
+  source_dir  = abspath("${path.module}/webhook")
+  output_path = abspath("${path.module}/.tmp/webhook.zip")
+  excludes = [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "env",
   ]
 }
 
-resource "google_bigquery_dataset" "default" {
-  dataset_id = "summary_dataset"
-  project    = var.project_id
-  depends_on = [
-    module.project_services,
-  ]
+resource "google_storage_bucket_object" "webhook_staging" {
+  name   = "webhook-staging/${data.archive_file.webhook_staging.output_base64sha256}.zip"
+  bucket = google_storage_bucket.main.name
+  source = data.archive_file.webhook_staging.output_path
 }
 
-resource "google_bigquery_table" "default" {
-  dataset_id          = google_bigquery_dataset.default.dataset_id
-  table_id            = "summary_table"
-  project             = var.project_id
-  deletion_protection = false
+#-- Eventarc trigger --#
+resource "google_eventarc_trigger" "trigger" {
+  project         = module.project_services.project_id
+  location        = var.region
+  name            = local.trigger_name
+  service_account = google_service_account.trigger.email
+  labels          = var.labels
 
-  schema = <<EOF
-[
-  {
-    "name": "bucket",
-    "type": "STRING",
-    "description": "Source bucket of artifact"
-  },
-  {
-    "name": "filename",
-    "type": "STRING",
-    "description": "Filename of the source artifact"
-  },
-  {
-    "name": "extracted_text",
-    "type": "STRING",
-    "description": "Text extracted from the source artifact"
-  },
-  {
-    "name": "summary_uri",
-    "type": "STRING",
-    "description": "The Storage URI of the complete document text"
-  },
-  {
-    "name": "complete_text_uri",
-    "type": "STRING",
-    "description": "The Storage URI of the complete document text"
-  },
-  {
-    "name": "summary",
-    "type": "STRING",
-    "description": "Text summary generated by the LLM"
-  },
-  {
-    "name": "timestamp",
-    "type": "TIMESTAMP",
-    "description": "TeTimestamp that the processing occurred on"
-  }
-]
-EOF
-}
-
-resource "google_storage_bucket" "uploads" {
-  project                     = var.project_id
-  name                        = "${var.project_id}_uploads"
-  location                    = var.region
-  force_destroy               = true
-  uniform_bucket_level_access = true
-}
-
-resource "google_storage_bucket" "output" {
-  project                     = var.project_id
-  name                        = "${var.project_id}_output"
-  location                    = var.region
-  force_destroy               = true
-  uniform_bucket_level_access = true
-}
-
-resource "google_storage_bucket" "main" {
-  project                     = var.project_id
-  name                        = "${var.bucket_name}-${random_id.rand.hex}"
-  location                    = "US"
-  uniform_bucket_level_access = true
-}
-
-resource "google_service_account" "upload_trigger" {
-  project      = var.project_id
-  account_id   = "upload-trigger-service-account"
-  display_name = "Eventarc Service Account"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "google_project_iam_member" "event_receiver" {
-  project = var.project_id
-  role    = "roles/eventarc.eventReceiver"
-  member  = "serviceAccount:${google_service_account.upload_trigger.email}"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "google_project_iam_member" "run_invoker" {
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "serviceAccount:${google_service_account.upload_trigger.email}"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-data "google_storage_project_service_account" "gcs_account" {
-  project    = var.project_id
-  depends_on = [time_sleep.wait_for_apis]
-}
-
-resource "google_project_iam_member" "pubsub_publisher" {
-  project = var.project_id
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
-  depends_on = [
-    module.project_services,
-    data.google_storage_project_service_account.gcs_account,
-  ]
-}
-
-resource "google_eventarc_trigger" "summarization" {
-  project  = var.project_id
-  name     = "terraformdev"
-  location = var.region
   matching_criteria {
     attribute = "type"
     value     = "google.cloud.storage.object.v1.finalized"
   }
   matching_criteria {
     attribute = "bucket"
-    value     = google_storage_bucket.uploads.name
+    value     = google_storage_bucket.docs.name
   }
+
   destination {
     cloud_run_service {
       service = google_cloudfunctions2_function.webhook.name
       region  = var.region
     }
   }
-  service_account = google_service_account.upload_trigger.email
-  depends_on = [
-    google_project_iam_member.event_receiver,
-    google_project_iam_member.run_invoker,
-    google_project_iam_member.pubsub_publisher,
-  ]
+}
+
+resource "google_project_iam_member" "trigger" {
+  project = module.project_services.project_id
+  member  = google_service_account.trigger.member
+  for_each = toset([
+    "roles/eventarc.eventReceiver", # https://cloud.google.com/eventarc/docs/access-control
+    "roles/run.invoker",            # https://cloud.google.com/run/docs/reference/iam/roles
+  ])
+  role = each.key
+}
+
+resource "google_service_account" "trigger" {
+  project      = module.project_services.project_id
+  account_id   = local.trigger_sa_name
+  display_name = "Doc summary Eventarc trigger"
+}
+
+#-- Cloud Storage Eventarc agent --#
+resource "google_project_iam_member" "gcs_account" {
+  project = module.project_services.project_id
+  member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+  role    = "roles/pubsub.publisher" # https://cloud.google.com/pubsub/docs/access-control
+}
+data "google_storage_project_service_account" "gcs_account" {
+  project = module.project_services.project_id
+}
+
+resource "google_project_iam_member" "eventarc_agent" {
+  project = module.project_services.project_id
+  member  = "serviceAccount:${google_project_service_identity.eventarc_agent.email}"
+  role    = "roles/eventarc.serviceAgent" # https://cloud.google.com/iam/docs/service-agents
+}
+
+resource "google_project_service_identity" "eventarc_agent" {
+  provider = google-beta
+  project  = module.project_services.project_id
+  service  = "eventarc.googleapis.com"
+}
+
+#-- Document AI --#
+resource "google_document_ai_processor" "ocr" {
+  project      = module.project_services.project_id
+  location     = var.documentai_location
+  display_name = local.ocr_processor_name
+  type         = "OCR_PROCESSOR"
+}
+
+#-- BigQuery --#
+resource "google_bigquery_dataset" "main" {
+  project    = module.project_services.project_id
+  dataset_id = local.bq_dataset_name
+}
+
+resource "google_bigquery_table" "main" {
+  project             = module.project_services.project_id
+  dataset_id          = google_bigquery_dataset.main.dataset_id
+  table_id            = local.bq_table_name
+  schema              = file("${path.module}/schema.json")
+  deletion_protection = false
 }

@@ -27,20 +27,14 @@ from storage import upload_to_gcs
 from vertex_llm import predict_large_language_model
 from utils import coerce_datetime_zulu, truncate_complete_text
 
-_FUNCTIONS_VERTEX_EVENT_LOGGER = 'summarization-by-llm'
+_FUNCTIONS_VERTEX_EVENT_LOGGER = "summarization-by-llm"
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
-_LOCATION = os.environ["LOCATION"]
+_LOCATION = "us-central1"
 _MODEL_NAME = "text-bison@001"
-_DEFAULT_PARAMETERS = {
-    "temperature": 0.2,
-    "max_output_tokens": 256,
-    "top_p": 0.95,
-    "top_k": 40,
-}
-_DATASET_ID = os.environ["DATASET_ID"]
-_TABLE_ID = os.environ["TABLE_ID"]
+_DATASET_ID = os.environ["BQ_DATASET"]
+_TABLE_ID = os.environ["BQ_TABLE"]
 
 
 def default_marshaller(o: object) -> str:
@@ -57,14 +51,14 @@ def redirect_and_reply(previous_data):
     auth_req = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(auth_req, endpoint)
     data = {
-        'name': previous_data["name"],
-        'id': previous_data["id"],
-        'bucket': previous_data["bucket"],
-        'timeCreated': previous_data["timeCreated"],
+        "name": previous_data["name"],
+        "id": previous_data["id"],
+        "bucket": previous_data["bucket"],
+        "timeCreated": previous_data["timeCreated"],
     }
     headers = {}
     headers["Authorization"] = f"Bearer {id_token}"
-    logger.log(f'TRIGGERING JOB FLOW: {endpoint}')
+    logger.log(f"TRIGGERING JOB FLOW: {endpoint}")
     try:
         requests.post(
             endpoint,
@@ -85,7 +79,7 @@ def entrypoint(request: object) -> Mapping[str, str]:
         # Entrypoint called by Pub-Sub (Eventarc)
         return redirect_and_reply(data)
 
-    if 'bucket' in data:
+    if "bucket" in data:
         # Entrypoint called by REST (possibly by redirect_and_replay)
         return cloud_event_entrypoint(
             name=data["name"],
@@ -111,8 +105,7 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created):
     logging_client = logging.Client()
 
     logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
-               severity="INFO")
+    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}", severity="INFO")
 
     extracted_text = async_document_extract(bucket, name, output_bucket=_OUTPUT_BUCKET)
     logger.log(
@@ -139,11 +132,14 @@ def summarization_entrypoint(
     logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
 
     if len(extracted_text) == 0:
-        logger.log(f"""cloud_event_id({event_id}): BAD INPUT
+        logger.log(
+            f"""cloud_event_id({event_id}): BAD INPUT
 No characters recognized from PDF and so the PDF cannot be
 summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
 'Conclusion' sections.
-                   """, severity="ERROR")
+                   """,
+            severity="ERROR",
+        )
         return ""
 
     complete_text_filename = f'summaries/{name.replace(".pdf", "")}_fulltext.txt'
@@ -157,8 +153,10 @@ summarized. Be sure to upload a high-quality PDF that contains 'Abstract' and
         severity="INFO",
     )
 
-    prompt = 'Summarize:'
-    extracted_text_trunc = truncate_complete_text(extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER)
+    prompt = "Summarize:"
+    extracted_text_trunc = truncate_complete_text(
+        extracted_text, _FUNCTIONS_VERTEX_EVENT_LOGGER
+    )
     summary = predict_large_language_model(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,

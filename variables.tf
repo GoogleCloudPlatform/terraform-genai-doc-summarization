@@ -47,7 +47,7 @@ variable "disable_services_on_destroy" {
 variable "unique_names" {
   description = "Whether to use unique names for resources"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "labels" {

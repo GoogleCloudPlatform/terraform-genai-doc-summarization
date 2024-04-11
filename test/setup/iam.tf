@@ -20,6 +20,7 @@ locals {
     "roles/clouddeploymentmanager.serviceAgent",
     "roles/cloudfunctions.viewer",
     "roles/documentai.editor",
+    "roles/resourcemanager.projectIamAdmin",
     "roles/serviceusage.serviceUsageViewer",
   ]
 }

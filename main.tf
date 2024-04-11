@@ -55,8 +55,8 @@ locals {
   topic_name         = var.unique_names ? "summary-topic-${random_id.unique_id.hex}" : "summary-topic"
   subscription_name  = var.unique_names ? "summary-subscription-${random_id.unique_id.hex}" : "summary-subscription"
   ocr_processor_name = var.unique_names ? "summary-ocr-processor-${random_id.unique_id.hex}" : "summary-ocr-processor"
-  bq_dataset_name    = var.unique_names ? "summary-dataset-${random_id.unique_id.hex}" : "summary-dataset"
-  bq_table_name      = var.unique_names ? "summary-table-${random_id.unique_id.hex}" : "summary-table"
+  bq_dataset_name    = var.unique_names ? "summary_dataset_${random_id.unique_id.hex}" : "summary_dataset"
+  bq_table_name      = var.unique_names ? "summary_table_${random_id.unique_id.hex}" : "summary_table"
 }
 
 #-- Cloud Storage buckets --#

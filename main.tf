@@ -52,6 +52,8 @@ locals {
   artifact_repo_name = var.unique_names ? "summary-artifact-repo-${random_id.unique_id.hex}" : "summary-artifact-repo"
   trigger_name       = var.unique_names ? "summary-trigger-${random_id.unique_id.hex}" : "summary-trigger"
   trigger_sa_name    = var.unique_names ? "summary-trigger-sa-${random_id.unique_id.hex}" : "summary-trigger-sa"
+  topic_name         = var.unique_names ? "summary-topic-${random_id.unique_id.hex}" : "summary-topic"
+  subscription_name  = var.unique_names ? "summary-subscription-${random_id.unique_id.hex}" : "summary-subscription"
   ocr_processor_name = var.unique_names ? "summary-ocr-processor-${random_id.unique_id.hex}" : "summary-ocr-processor"
   bq_dataset_name    = var.unique_names ? "summary-dataset-${random_id.unique_id.hex}" : "summary-dataset"
   bq_table_name      = var.unique_names ? "summary-table-${random_id.unique_id.hex}" : "summary-table"
@@ -176,6 +178,12 @@ resource "google_eventarc_trigger" "trigger" {
       region  = var.region
     }
   }
+
+  transport {
+    pubsub {
+      subscription = google_pubsub_subscription.trigger.name
+    }
+  }
 }
 
 resource "google_project_iam_member" "trigger" {
@@ -193,6 +201,21 @@ resource "google_service_account" "trigger" {
   account_id   = local.trigger_sa_name
   display_name = "Doc summary Eventarc trigger"
 }
+
+resource "google_pubsub_topic" "trigger" {
+  project = module.project_services.project_id
+  name    = local.topic_name
+  labels  = var.labels
+}
+
+resource "google_pubsub_subscription" "trigger" {
+  project                      = module.project_services.project_id
+  name                         = local.subscription_name
+  topic                        = google_pubsub_topic.trigger.id
+  labels                       = var.labels
+  enable_exactly_once_delivery = true
+}
+
 
 #-- Cloud Storage Eventarc agent --#
 resource "google_project_iam_member" "gcs_account" {

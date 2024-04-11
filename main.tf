@@ -52,8 +52,6 @@ locals {
   artifact_repo_name = var.unique_names ? "summary-artifact-repo-${random_id.unique_id.hex}" : "summary-artifact-repo"
   trigger_name       = var.unique_names ? "summary-trigger-${random_id.unique_id.hex}" : "summary-trigger"
   trigger_sa_name    = var.unique_names ? "summary-trigger-sa-${random_id.unique_id.hex}" : "summary-trigger-sa"
-  topic_name         = var.unique_names ? "summary-topic-${random_id.unique_id.hex}" : "summary-topic"
-  subscription_name  = var.unique_names ? "summary-subscription-${random_id.unique_id.hex}" : "summary-subscription"
   ocr_processor_name = var.unique_names ? "summary-ocr-processor-${random_id.unique_id.hex}" : "summary-ocr-processor"
   bq_dataset_name    = var.unique_names ? "summary_dataset_${random_id.unique_id.hex}" : "summary_dataset"
   bq_table_name      = var.unique_names ? "summary_table_${random_id.unique_id.hex}" : "summary_table"

@@ -15,10 +15,12 @@
  */
 
 locals {
+  # https://cloud.google.com/iam/docs/understanding-roles
   int_required_roles = [
     "roles/aiplatform.user",
     "roles/artifactregistry.admin",
     "roles/bigquery.admin",
+    "roles/cloudconfig.serviceAgent",
     "roles/documentai.editor",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",

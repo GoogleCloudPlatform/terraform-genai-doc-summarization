@@ -99,7 +99,7 @@ spec:
       - name: unique_names
         description: Whether to use unique names for resources
         varType: bool
-        defaultValue: true
+        defaultValue: false
     outputs:
       - name: bigquery_dataset_name
         description: The name of the BigQuery dataset created
@@ -117,14 +117,11 @@ spec:
     roles:
       - level: Project
         roles:
-          - roles/aiplatform.user
-          - roles/artifactregistry.admin
-          - roles/bigquery.admin
+          - roles/clouddeploymentmanager.serviceAgent
+          - roles/cloudfunctions.viewer
           - roles/documentai.editor
-          - roles/iam.serviceAccountAdmin
-          - roles/iam.serviceAccountUser
           - roles/resourcemanager.projectIamAdmin
-          - roles/serviceusage.serviceUsageAdmin
+          - roles/serviceusage.serviceUsageViewer
     services:
       - aiplatform.googleapis.com
       - artifactregistry.googleapis.com

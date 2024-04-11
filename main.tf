@@ -202,6 +202,7 @@ resource "google_project_iam_member" "gcs_account" {
   member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
   role    = "roles/pubsub.publisher" # https://cloud.google.com/pubsub/docs/access-control
 }
+
 data "google_storage_project_service_account" "gcs_account" {
   project = module.project_services.project_id
 }

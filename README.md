@@ -45,7 +45,7 @@ Deployment: 10 mins
 | labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
-| unique\_names | Whether to use unique names for resources | `bool` | `true` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
 
 ## Outputs
 

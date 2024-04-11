@@ -18,7 +18,7 @@ locals {
   # https://cloud.google.com/iam/docs/understanding-roles
   int_required_roles = [
     "roles/clouddeploymentmanager.serviceAgent",
-    "roles/cloudfunctions.viewer",
+    "roles/cloudfunctions.serviceAgent",
     "roles/documentai.editor",
     "roles/resourcemanager.projectIamAdmin",
     "roles/serviceusage.serviceUsageViewer",

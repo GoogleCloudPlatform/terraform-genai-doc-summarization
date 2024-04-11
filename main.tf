@@ -178,12 +178,6 @@ resource "google_eventarc_trigger" "trigger" {
       region  = var.region
     }
   }
-
-  transport {
-    pubsub {
-      subscription = google_pubsub_subscription.trigger.name
-    }
-  }
 }
 
 resource "google_project_iam_member" "trigger" {
@@ -201,21 +195,6 @@ resource "google_service_account" "trigger" {
   account_id   = local.trigger_sa_name
   display_name = "Doc summary Eventarc trigger"
 }
-
-resource "google_pubsub_topic" "trigger" {
-  project = module.project_services.project_id
-  name    = local.topic_name
-  labels  = var.labels
-}
-
-resource "google_pubsub_subscription" "trigger" {
-  project                      = module.project_services.project_id
-  name                         = local.subscription_name
-  topic                        = google_pubsub_topic.trigger.id
-  labels                       = var.labels
-  enable_exactly_once_delivery = true
-}
-
 
 #-- Cloud Storage Eventarc agent --#
 resource "google_project_iam_member" "gcs_account" {
@@ -249,8 +228,9 @@ resource "google_document_ai_processor" "ocr" {
 
 #-- BigQuery --#
 resource "google_bigquery_dataset" "main" {
-  project    = module.project_services.project_id
-  dataset_id = local.bq_dataset_name
+  project                    = module.project_services.project_id
+  dataset_id                 = local.bq_dataset_name
+  delete_contents_on_destroy = true
 }
 
 resource "google_bigquery_table" "main" {

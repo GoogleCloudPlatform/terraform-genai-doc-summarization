@@ -73,7 +73,7 @@ def redirect_and_reply(previous_data):
     return flask.Response(status=200)
 
 
-def entrypoint(request: object) -> Mapping[str, str]:
+def on_cloud_event(request: object) -> Mapping[str, str]:
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
         # Entrypoint called by Pub-Sub (Eventarc)

@@ -101,8 +101,10 @@ spec:
         varType: bool
         defaultValue: false
     outputs:
-      - name: bigquery_dataset_name
+      - name: bigquery_dataset_id
         description: The name of the BigQuery dataset created
+      - name: bigquery_table_id
+        description: The name of the BigQuery table created
       - name: bucket_docs_name
         description: The name of the docs bucket created
       - name: bucket_main_name
@@ -118,7 +120,7 @@ spec:
       - level: Project
         roles:
           - roles/clouddeploymentmanager.serviceAgent
-          - roles/cloudfunctions.viewer
+          - roles/cloudfunctions.serviceAgent
           - roles/documentai.editor
           - roles/resourcemanager.projectIamAdmin
           - roles/serviceusage.serviceUsageViewer

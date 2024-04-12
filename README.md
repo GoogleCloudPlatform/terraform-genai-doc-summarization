@@ -51,7 +51,8 @@ Deployment: 10 mins
 
 | Name | Description |
 |------|-------------|
-| bigquery\_dataset\_name | The name of the BigQuery dataset created |
+| bigquery\_dataset\_id | The name of the BigQuery dataset created |
+| bigquery\_table\_id | The name of the BigQuery table created |
 | bucket\_docs\_name | The name of the docs bucket created |
 | bucket\_main\_name | The name of the main bucket created |
 | documentai\_processor\_id | The full Document AI processor path ID |

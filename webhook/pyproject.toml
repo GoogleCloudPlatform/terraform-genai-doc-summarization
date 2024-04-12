@@ -1,0 +1,10 @@
+[tool.mypy]
+exclude = "env/"
+
+[tool.ruff]
+line-length = 100
+lint.select = ["F", "E", "W", "D", "N", "C", "B", "Q", "A"]
+lint.ignore = ["D100", "D211", "D213"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

@@ -54,7 +54,6 @@ locals {
   trigger_sa_name    = var.unique_names ? "summary-trigger-sa-${random_id.unique_id.hex}" : "summary-trigger-sa"
   ocr_processor_name = var.unique_names ? "summary-ocr-processor-${random_id.unique_id.hex}" : "summary-ocr-processor"
   bq_dataset_name    = var.unique_names ? "summary_dataset_${random_id.unique_id.hex}" : "summary_dataset"
-  bq_table_name      = var.unique_names ? "summary_table_${random_id.unique_id.hex}" : "summary_table"
 }
 
 #-- Cloud Storage buckets --#
@@ -235,7 +234,7 @@ resource "google_bigquery_dataset" "main" {
 resource "google_bigquery_table" "main" {
   project             = module.project_services.project_id
   dataset_id          = google_bigquery_dataset.main.dataset_id
-  table_id            = local.bq_table_name
+  table_id            = "summaries"
   schema              = file("${path.module}/schema.json")
   deletion_protection = false
 }

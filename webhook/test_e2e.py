@@ -27,7 +27,6 @@ from google.cloud import bigquery
 from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
-VECTOR_SEARCH_INDEX_ID = "3421719768057511936"
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:

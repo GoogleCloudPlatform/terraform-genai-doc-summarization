@@ -30,10 +30,10 @@ bucket — for instance, through the Console UI or gcloud. This upload triggers 
 
 ## Deployment Duration
 Configuration: 1 mins
-Deployment: 10 mins
+Deployment: 5 mins
 
 ## Cost
-[Cost Details](https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11)
+[Cost Details](https://cloud.google.com/products/calculator-legacy/#id=4ce59084-5e4b-42c3-bad6-983f8618361c)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs

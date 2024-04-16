@@ -39,10 +39,10 @@ spec:
     icon: assets/icon.png
     deploymentDuration:
       configurationSecs: "60"
-      deploymentSecs: "600"
+      deploymentSecs: "300"
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
+      url: https://cloud.google.com/products/calculator-legacy/#id=4ce59084-5e4b-42c3-bad6-983f8618361c
     cloudProducts:
       - productId: VERTEX_SECTION
         label: Vertex AI
@@ -90,7 +90,6 @@ spec:
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
-        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to

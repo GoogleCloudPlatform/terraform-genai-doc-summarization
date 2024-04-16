@@ -22,7 +22,7 @@ spec:
   info:
     title: Generative AI Document Summarization
     source:
-      repo: https://github.com/balajismaniam/terraform-genai-doc-summarization.git
+      repo: https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization.git
       sourceType: git
   ui:
     input:

@@ -95,15 +95,14 @@ resource "google_cloudfunctions2_function" "webhook" {
   }
 
   service_config {
+    available_memory      = "1G"
     service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID        = module.project_services.project_id
-      VERTEXAI_LOCATION = var.region
-      OUTPUT_BUCKET     = google_storage_bucket.main.name
-      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
-      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
-      BQ_DATASET        = google_bigquery_dataset.main.dataset_id
-      BQ_TABLE          = google_bigquery_table.main.table_id
+      OUTPUT_BUCKET   = google_storage_bucket.main.name
+      DOCAI_PROCESSOR = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION  = google_document_ai_processor.ocr.location
+      BQ_DATASET      = google_bigquery_dataset.main.dataset_id
+      BQ_TABLE        = google_bigquery_table.main.table_id
     }
   }
 }

@@ -106,6 +106,7 @@ def process_document(
     print(f"🗃️ {event_id}: Writing document summary to BigQuery: {bq_dataset}.{bq_table}")
     write_to_bigquery(
         event_id=event_id,
+        time_uploaded=time_uploaded,
         doc_path=doc_path,
         doc_text=doc_text,
         doc_summary=doc_summary,
@@ -193,6 +194,7 @@ def generate_summary(text: str, model_name: str = "gemini-pro") -> str:
 
 def write_to_bigquery(
     event_id: str,
+    time_uploaded: datetime,
     doc_path: str,
     doc_text: str,
     doc_summary: str,
@@ -203,6 +205,7 @@ def write_to_bigquery(
 
     Args:
         event_id: The Eventarc trigger event ID.
+        time_uploaded: Time the document was uploaded.
         doc_path: Cloud Storage path to the document.
         doc_text: Text extracted from the document.
         doc_summary: Summary generated fro the document.
@@ -215,7 +218,8 @@ def write_to_bigquery(
         rows=[
             {
                 "event_id": event_id,
-                "processing_time": datetime.now(),
+                "time_uploaded": time_uploaded,
+                "time_processed": datetime.now(),
                 "document_path": doc_path,
                 "document_text": doc_text,
                 "document_summary": doc_summary,

@@ -5,7 +5,12 @@
     "description": "The Eventarc trigger event ID"
   },
   {
-    "name": "processing_time",
+    "name": "time_uploaded",
+    "type": "TIMESTAMP",
+    "description": "The time at which the document was uploaded"
+  },
+  {
+    "name": "time_processed",
     "type": "TIMESTAMP",
     "description": "The time at which the document finished processing"
   },

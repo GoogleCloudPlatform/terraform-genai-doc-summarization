@@ -43,12 +43,6 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Cache linter
-        uses: actions/cache@v4
-        with:
-          path: webhook/env
-          key: ${{ runner.os }}-lint
-
       - name: Install linter
         working-directory: webhook
         run: |

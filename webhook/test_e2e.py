@@ -91,7 +91,7 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
     output_bucket = terraform_outputs["bucket_main_name"]
     docai_processor_id = terraform_outputs["documentai_processor_id"]
     bq_dataset = terraform_outputs["bigquery_dataset_id"]
-    bq_table = terraform_outputs["bigquery_table_id"]
+    bq_table = "summaries"
 
     print(">> process_document")
     process_document(

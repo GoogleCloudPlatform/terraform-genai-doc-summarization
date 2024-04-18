@@ -30,7 +30,7 @@ spec:
       version: ">= 0.13"
     description:
       tagline: Create summaries of a large corpus of documents using Generative AI.
-      detailed: This solution showcases how to summarize a large corpus of documents using Generative AI. It provides an end-to-end demonstration of document summarization going all the way from raw documents, detecting text in the documents and summarizing the documents on-demand using Vertex AI LLM APIs, Document AI Character Recognition (OCR), and BigQuery.
+      detailed: This solution showcases how to summarize a large corpus of documents using Generative AI. It provides an end-to-end demonstration of document summarization going all the way from raw documents, detecting text in the documents and summarizing the documents on-demand using Vertex AI LLM APIs, Document AI Optical Character Recognition (OCR), and BigQuery.
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
@@ -93,8 +93,6 @@ spec:
     outputs:
       - name: bigquery_dataset_id
         description: The name of the BigQuery dataset created
-      - name: bigquery_table_id
-        description: The name of the BigQuery table created
       - name: bucket_docs_name
         description: The name of the docs bucket created
       - name: bucket_main_name

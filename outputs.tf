@@ -43,8 +43,3 @@ output "bigquery_dataset_id" {
   value       = google_bigquery_dataset.main.dataset_id
   description = "The name of the BigQuery dataset created"
 }
-
-output "bigquery_table_id" {
-  value       = google_bigquery_table.main.table_id
-  description = "The name of the BigQuery table created"
-}

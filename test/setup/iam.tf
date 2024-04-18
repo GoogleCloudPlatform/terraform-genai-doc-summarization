@@ -19,6 +19,7 @@ locals {
   int_required_roles = [
     "roles/clouddeploymentmanager.serviceAgent",
     "roles/cloudfunctions.serviceAgent",
+    "roles/config.agent",
     "roles/documentai.editor",
     "roles/resourcemanager.projectIamAdmin",
     "roles/serviceusage.serviceUsageViewer",

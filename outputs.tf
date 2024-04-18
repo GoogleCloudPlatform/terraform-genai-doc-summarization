@@ -15,7 +15,7 @@
  */
 
 output "neos_walkthrough_url" {
-  value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--document-summarization-gcf_tour"
+  value       = "https://console.cloud.google.com/?walkthrough_id=solutions-in-console--generative-ai--document-summarization--tour"
   description = "The URL to launch the in-console tutorial for the Generative AI Document Summarization solution"
 }
 

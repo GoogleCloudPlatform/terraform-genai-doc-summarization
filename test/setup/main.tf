@@ -31,6 +31,7 @@ module "project" {
     "cloudbuild.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "config.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "run.googleapis.com",

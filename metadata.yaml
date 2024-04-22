@@ -38,7 +38,7 @@ spec:
       deploymentSecs: "300"
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator-legacy/#id=4ce59084-5e4b-42c3-bad6-983f8618361c
+      url: https://cloud.google.com/products/calculator/#id=4ce59084-5e4b-42c3-bad6-983f8618361c
     cloudProducts:
       - productId: VERTEX_SECTION
         label: Vertex AI
@@ -54,7 +54,7 @@ spec:
     architecture:
       diagramUrl: https://www.gstatic.com/pantheon/images/solutions/gen_ai_document_summarization_architecture_v1.svg
       description:
-        - Uploading a new document triggers the webhook Cloud Function.
+        - User uploads a new document triggering the webhook Cloud Function.
         - Document AI extracts the text from the document file.
         - A Vertex AI Large Language Model summarizes the document text.
         - The document summaries are stored in BigQuery.

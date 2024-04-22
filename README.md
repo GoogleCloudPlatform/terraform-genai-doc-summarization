@@ -13,7 +13,7 @@ To deploy this blueprint you must have an active billing account and billing per
 ## Architecture
 ![Document Summarization using Generative AI](https://www.gstatic.com/pantheon/images/solutions/gen_ai_document_summarization_architecture_v1.svg)
 
-- Uploading a new document triggers the webhook Cloud Function.
+- User uploads a new document triggering the webhook Cloud Function.
 - Document AI extracts the text from the document file.
 - A Vertex AI Large Language Model summarizes the document text.
 - The document summaries are stored in BigQuery.
@@ -26,7 +26,7 @@ Configuration: 1 mins
 Deployment: 5 mins
 
 ## Cost
-[Cost Details](https://cloud.google.com/products/calculator-legacy/#id=4ce59084-5e4b-42c3-bad6-983f8618361c)
+[Cost Details](https://cloud.google.com/products/calculator/#id=4ce59084-5e4b-42c3-bad6-983f8618361c)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs

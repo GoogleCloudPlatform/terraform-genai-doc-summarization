@@ -18,6 +18,6 @@ google-auth==2.29.0
 google-cloud-aiplatform[pipelines]==1.47.0
 google-cloud-bigquery==3.21.0
 google-cloud-logging==3.10.0
-google-cloud-storage==2.10.0
+google-cloud-storage==2.16.0
 google-cloud-vision==3.7.2
 requests==2.31.0

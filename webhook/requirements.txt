@@ -14,7 +14,7 @@
 
 flask==2.3.3
 functions-framework==3.5.0
-google-auth==2.23.4
+google-auth==2.29.0
 google-cloud-aiplatform[pipelines]==1.47.0
 google-cloud-bigquery==3.21.0
 google-cloud-logging==3.10.0

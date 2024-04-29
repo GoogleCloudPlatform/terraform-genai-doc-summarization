@@ -8,6 +8,27 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/compare/v0.1.1...v0.2.0) (2024-04-29)
+
+
+### Features
+
+* **deps:** Update Terraform google to &gt;= 4.66, &lt; 5.21 ([#105](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/105)) ([6501f9b](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/6501f9b2d28cca6387184739745d074c6b530db2))
+* **deps:** Update Terraform google to &gt;= 4.66, &lt; 5.22 ([#106](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/106)) ([32243f5](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/32243f5992ef8643a587f928d5a2f53226162a5f))
+* **deps:** Update Terraform google to &gt;= 4.66, &lt; 5.26 ([#117](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/117)) ([2909651](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/290965173720556360a71287098b26088f1b759f))
+* **deps:** Update Terraform google to &gt;= 4.66, &lt; 5.27 ([#118](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/118)) ([d9ba98d](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/d9ba98d6e5bd920ec6514b767b5c98dbf4785961))
+* **deps:** Update Terraform google to v5 ([#80](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/80)) ([a053c00](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/a053c00dfb9a42151b0d719af8163a675f0644ea))
+
+
+### Bug Fixes
+
+* Add DefaultVerify() test ([#110](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/110)) ([83fbb45](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/83fbb45355a6b9fa2d73c5eb23044ac941e29b2b))
+* **deps:** Update actions/checkout action to v4 ([#89](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/89)) ([bdd158c](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/bdd158c33178eadb2fcbf015bf5270a825bcc956))
+* **deps:** Update google-github-actions/auth action to v1.3.0 ([#93](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/93)) ([65cd1db](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/65cd1db53ae86c6f395135abd4528b288bbc65ed))
+* **deps:** Update Terraform time to ~&gt; 0.11.0 ([#98](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/98)) ([9ebf3f3](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/9ebf3f329e85497c3809a442053df71c7f9a4e11))
+* missing gcloud dependency ([#102](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/102)) ([2ae7f83](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/2ae7f831b4bc6154bf0bdd2352bf8858bb671c51))
+* refactor the LLM prompt to its own variable ([#65](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/65)) ([4d20008](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/4d200088bfea58af0fbfb769bfbfd360bf1c5fc3))
+
 ## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/compare/v0.1.0...v0.1.1) (2023-08-03)
 
 

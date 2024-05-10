@@ -50,6 +50,8 @@ spec:
         label: Cloud Functions
       - productId: STORAGE_SECTION
         label: Cloud Storage
+      - productId: EVENTARC_SECTION
+        label: Eventarc
   content:
     architecture:
       diagramUrl: https://www.gstatic.com/pantheon/images/solutions/gen_ai_document_summarization_architecture_v1.svg

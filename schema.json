@@ -1,0 +1,32 @@
+[
+  {
+    "name": "event_id",
+    "type": "STRING",
+    "description": "The Eventarc trigger event ID"
+  },
+  {
+    "name": "time_uploaded",
+    "type": "TIMESTAMP",
+    "description": "The time at which the document was uploaded"
+  },
+  {
+    "name": "time_processed",
+    "type": "TIMESTAMP",
+    "description": "The time at which the document finished processing"
+  },
+  {
+    "name": "document_path",
+    "type": "STRING",
+    "description": "Cloud Storage path to the document"
+  },
+  {
+    "name": "document_text",
+    "type": "STRING",
+    "description": "Text extracted from the document"
+  },
+  {
+    "name": "document_summary",
+    "type": "STRING",
+    "description": "Summary generated fro the document"
+  }
+]

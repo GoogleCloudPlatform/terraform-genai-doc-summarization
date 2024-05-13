@@ -15,7 +15,6 @@
  */
 
 module "simple" {
-  source       = "../../"
-  project_id   = var.project_id
-  webhook_path = abspath("../../webhook")
+  source     = "../../"
+  project_id = var.project_id
 }

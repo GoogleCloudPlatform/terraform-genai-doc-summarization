@@ -8,6 +8,17 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 This changelog is generated automatically based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/compare/v0.2.0...v0.3.0) (2024-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* simplify webhook code ([#114](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/114))
+
+### Miscellaneous Chores
+
+* simplify webhook code ([#114](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/issues/114)) ([083d7da](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/commit/083d7da9d90cca3c9769616aeb9156b312a9cbc1))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-genai-doc-summarization/compare/v0.1.1...v0.2.0) (2024-04-29)
 
 

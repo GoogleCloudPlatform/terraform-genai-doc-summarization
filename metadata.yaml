@@ -38,7 +38,7 @@ spec:
       deploymentSecs: "300"
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator/#id=4ce59084-5e4b-42c3-bad6-983f8618361c
+      url: https://cloud.google.com/products/calculator?dl=CiQyN2Q1NmU4ZS0yNzg0LTQ1YjMtYTVkOC0wOTEwMmYxMjllYzcQEhokMTA1QTQyQUUtQTI2Ni00MzgzLTlCMDEtOTJEMjkxMjlFQTA1
     cloudProducts:
       - productId: VERTEX_SECTION
         label: Vertex AI

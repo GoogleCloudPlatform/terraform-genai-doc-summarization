@@ -91,3 +91,27 @@ information on contributing to this module.
 ## Security Disclosures
 
 Please see our [security disclosure process](./SECURITY.md).
+
+
+### Instalation
+- terraform init
+- criar arquivo terraform.tfvars
+- terraform validate
+- gerar conta serviço GCP
+- criar chave na conta serviço
+- export GOOGLE_APPLICATION_CREDENTIALS="/Users/marcelogalli/Downloads/ia-doc-inova-8b49c59cf74f.json"
+- terraform plan
+- terraform apply
+
+
+### TESTE
+- inserir o documento no bucket DOCS (nao inserir no main)
+- gcloud storage cp gs://arxiv-dataset/arxiv/cmp-lg/pdf/9410/9410009v1.pdf gs://summary-docs-ia-doc-inova
+
+- acessar cloud functions
+- click em summary-webhook
+- registros
+
+- acessar bigquery
+- acessar context summary_dataset
+- acessar ta

@@ -114,8 +114,33 @@ def process_document(
         bq_table=bq_table,
     )
 
+    move_file_to_processed_bucket(input_bucket, filename, output_bucket)
+
     print(f"✅ {event_id}: Done!")
 
+
+def move_file_to_processed_bucket(
+    input_bucket: str,
+    filename: str,
+    output_bucket: str
+) -> None:
+    """Move the file to another bucket after processing."""
+    storage_client = storage.Client()
+
+    # Referência ao bucket de origem e ao arquivo
+    source_bucket = storage_client.bucket(input_bucket)
+    source_blob = source_bucket.blob(filename)
+
+    # Referência ao bucket de destino
+    destination_bucket = storage_client.bucket(output_bucket)
+
+    # Copiar o arquivo para o bucket de destino
+    source_bucket.copy_blob(source_blob, destination_bucket, filename)
+
+    # Após a cópia, deletar o arquivo do bucket original
+    source_blob.delete()
+
+    print(f"File {filename} moved from {input_bucket} to {output_bucket} and deleted from source.")
 
 def get_document_text(
     input_file: str,
@@ -124,20 +149,6 @@ def get_document_text(
     temp_bucket: str,
     docai_location: str = "us",
 ) -> Iterator[str]:
-    """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage file.
-
-    For more information, see:
-        https://cloud.google.com/document-ai/docs/process-documents-ocr
-
-    Args:
-        input_file: GCS URI of the document file.
-        mime_type: MIME type of the document file.
-        processor_id: ID of the Document AI processor.
-        temp_bucket: GCS bucket to store Document AI temporary files.
-        docai_location: Location of the Document AI processor.
-
-    Yields: The document text chunks.
-    """
     # You must set the `api_endpoint` if you use a location other than "us".
     documentai_client = documentai.DocumentProcessorServiceClient(
         client_options=ClientOptions(api_endpoint=f"{docai_location}-documentai.googleapis.com")

@@ -3,4 +3,4 @@ functions-framework==3.5.0
 google-cloud-aiplatform==1.51.0
 google-cloud-documentai==2.27.0
 google-cloud-bigquery==3.22.0
-google-cloud-storage==2.16.0
+google-cloud-storage==2.19.0

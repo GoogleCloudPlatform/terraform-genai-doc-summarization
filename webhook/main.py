@@ -19,16 +19,15 @@ from datetime import datetime
 
 import functions_framework
 from cloudevents.http import CloudEvent
+from google import genai
 from google.api_core.client_options import ClientOptions
 from google.cloud import documentai
 from google.cloud import bigquery
 from google.cloud import storage  # type: ignore
-from vertexai.preview.generative_models import GenerativeModel  # type: ignore
 
 SUMMARIZATION_PROMPT = """\
 Give me a summary of the following text.
 Use simple language and give examples.
-Explain to an undergraduate.
 
 TEXT:
 {text}
@@ -49,6 +48,8 @@ def on_cloud_event(event: CloudEvent) -> None:
             filename=event.data["name"],
             mime_type=event.data["contentType"],
             time_uploaded=datetime.fromisoformat(event.data["timeCreated"]),
+            project=os.environ["PROJECT_ID"],
+            location=os.environ["LOCATION"],
             docai_processor_id=os.environ["DOCAI_PROCESSOR"],
             docai_location=os.environ.get("DOCAI_LOCATION", "us"),
             output_bucket=os.environ["OUTPUT_BUCKET"],
@@ -65,6 +66,8 @@ def process_document(
     filename: str,
     mime_type: str,
     time_uploaded: datetime,
+    project: str,
+    location: str,
     docai_processor_id: str,
     docai_location: str,
     output_bucket: str,
@@ -79,6 +82,8 @@ def process_document(
         filename: Name of the input file.
         mime_type: MIME type of the input file.
         time_uploaded: Time the input file was uploaded.
+        project: Google Cloud project ID.
+        location: Google Cloud location.
         docai_processor_id: ID of the Document AI processor.
         docai_location: Location of the Document AI processor.
         output_bucket: Name of the output bucket.
@@ -97,19 +102,26 @@ def process_document(
         )
     )
 
-    model_name = "gemini-pro"
-    print(f"📝 {event_id}: Summarizing document with {model_name}")
+    model_id = "gemini-2.0-flash"
+    print(f"📝 {event_id}: Summarizing document with {model_id}")
     print(f"  - Text length:    {len(doc_text)} characters")
-    doc_summary = generate_summary(doc_text, model_name)
+    client = genai.Client(vertexai=True, project=project, location=location)
+    response = client.models.generate_content(
+        model=model_id,
+        contents=SUMMARIZATION_PROMPT.format(text=doc_text),
+    )
+    doc_summary = response.text
+    print(doc_summary)
     print(f"  - Summary length: {len(doc_summary)} characters")
 
-    print(f"🗃️ {event_id}: Writing document summary to BigQuery: {bq_dataset}.{bq_table}")
+    print(f"🗃️ {event_id}: Writing document summary to BigQuery: {project}.{bq_dataset}.{bq_table}")
     write_to_bigquery(
         event_id=event_id,
         time_uploaded=time_uploaded,
         doc_path=doc_path,
         doc_text=doc_text,
         doc_summary=doc_summary,
+        project=project,
         bq_dataset=bq_dataset,
         bq_table=bq_table,
     )
@@ -177,27 +189,13 @@ def get_document_text(
         yield document.text
 
 
-def generate_summary(text: str, model_name: str = "gemini-pro") -> str:
-    """Generate a summary of the given text.
-
-    Args:
-        text: The text to summarize.
-        model_name: The name of the model to use for summarization.
-
-    Returns:
-        The generated summary.
-    """
-    model = GenerativeModel(model_name)
-    prompt = SUMMARIZATION_PROMPT.format(text=text)
-    return model.generate_content(prompt).text
-
-
 def write_to_bigquery(
     event_id: str,
     time_uploaded: datetime,
     doc_path: str,
     doc_text: str,
     doc_summary: str,
+    project: str,
     bq_dataset: str,
     bq_table: str,
 ) -> None:
@@ -209,10 +207,11 @@ def write_to_bigquery(
         doc_path: Cloud Storage path to the document.
         doc_text: Text extracted from the document.
         doc_summary: Summary generated fro the document.
+        project: Google Cloud project ID.
         bq_dataset: Name of the BigQuery dataset.
         bq_table: Name of the BigQuery table.
     """
-    bq_client = bigquery.Client()
+    bq_client = bigquery.Client(project=project)
     bq_client.insert_rows(
         table=bq_client.get_table(f"{bq_dataset}.{bq_table}"),
         rows=[

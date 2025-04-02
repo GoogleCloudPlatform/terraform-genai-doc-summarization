@@ -27,7 +27,7 @@ from google.cloud import bigquery
 from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
-LOCATION = 'us-central1'
+LOCATION = "us-central1"
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:

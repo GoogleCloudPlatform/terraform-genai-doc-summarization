@@ -20,18 +20,11 @@ from datetime import datetime
 import functions_framework
 from cloudevents.http import CloudEvent
 from google import genai  # type: ignore
+from google.genai.types import GenerateContentConfig
 from google.api_core.client_options import ClientOptions
 from google.cloud import documentai
 from google.cloud import bigquery
 from google.cloud import storage  # type: ignore
-
-SUMMARIZATION_PROMPT = """\
-Give me a summary of the following text.
-Use simple language and give examples.
-
-TEXT:
-{text}
-"""
 
 
 @functions_framework.cloud_event
@@ -102,13 +95,18 @@ def process_document(
         )
     )
 
-    model_id = "gemini-2.0-flash"
-    print(f"📝 {event_id}: Summarizing document with {model_id}")
+    print(f"📝 {event_id}: Summarizing document")
     print(f"  - Text length:    {len(doc_text)} characters")
     client = genai.Client(vertexai=True, project=project, location=location)
     response = client.models.generate_content(
-        model=model_id,
-        contents=SUMMARIZATION_PROMPT.format(text=doc_text),
+        model="gemini-2.0-flash",
+        contents=doc_text,
+        config=GenerateContentConfig(
+            system_instruction=[
+                "Give me a summary of the following text."
+                "Use simple language and give examples."
+            ]
+        ),
     )
     doc_summary = response.text
     print(doc_summary)

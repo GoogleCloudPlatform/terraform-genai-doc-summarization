@@ -20,7 +20,7 @@ from datetime import datetime
 import functions_framework
 from cloudevents.http import CloudEvent
 from google import genai  # type: ignore
-from google.genai.types import GenerateContentConfig # type: ignore
+from google.genai.types import GenerateContentConfig  # type: ignore
 from google.api_core.client_options import ClientOptions
 from google.cloud import documentai
 from google.cloud import bigquery

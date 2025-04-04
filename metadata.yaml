@@ -27,7 +27,7 @@ spec:
     version: 0.2.0
     actuationTool:
       flavor: Terraform
-      version: ">= 0.13"
+      version: ">= 1.5"
     description:
       tagline: Create summaries of a large corpus of documents using Generative AI.
       detailed: This solution showcases how to summarize a large corpus of documents using Generative AI. It provides an end-to-end demonstration of document summarization going all the way from raw documents, detecting text in the documents and summarizing the documents on-demand using Vertex AI LLM APIs, Document AI Optical Character Recognition (OCR), and BigQuery.

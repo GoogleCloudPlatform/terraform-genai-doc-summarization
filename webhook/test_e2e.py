@@ -27,6 +27,7 @@ from google.cloud import bigquery
 from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
+LOCATION = "us-central1"
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
@@ -100,6 +101,8 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
         filename="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.now(),
+        project=PROJECT_ID,
+        location=LOCATION,
         docai_processor_id=docai_processor_id,
         docai_location="us",
         output_bucket=output_bucket,
@@ -109,6 +112,6 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
 
     # Make sure we have a non-empty dataset.
     print(">> Checking bigquery table")
-    bq_client = bigquery.Client()
+    bq_client = bigquery.Client(project=PROJECT_ID)
     rows = bq_client.list_rows(bq_client.get_table(f"{bq_dataset}.{bq_table}"))
     assert len(list(rows)) > 0

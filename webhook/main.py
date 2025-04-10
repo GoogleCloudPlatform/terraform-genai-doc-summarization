@@ -35,7 +35,7 @@ def on_cloud_event(event: CloudEvent) -> None:
         event: CloudEvent object.
     """
     try:
-        event_type = event.data.get("type", "")
+        event_type = event._attributes["type"]
         if event_type == "google.cloud.storage.object.v1.finalized":
             process_document(
                 event_id=event.data["id"],
@@ -256,20 +256,15 @@ def delete_document(
     """
     doc_path = f"gs://{input_bucket}/{filename}"
     print(f"🗑️ {event_id}: Removing document summary from BigQuery: {project}.{bq_dataset}.{bq_table}")
-    
+
     bq_client = bigquery.Client(project=project)
     query = f"""
     DELETE FROM `{project}.{bq_dataset}.{bq_table}`
-    WHERE document_path = @doc_path
+    WHERE 'document_path' = '{doc_path}'
     """
-    
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("doc_path", "STRING", doc_path),
-        ]
-    )
-    
-    query_job = bq_client.query(query, job_config=job_config)
+    print(f"query: {query}")
+
+    query_job = bq_client.query(query)
     query_job.result()  # Wait for the query to complete
-    
-    print(f"✅ {event_id}: Document summary removed from BigQuery!")
+
+    print(f"✅ {event_id}: Document summary removal attempt finished for {doc_path}.")

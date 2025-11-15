@@ -29,26 +29,37 @@ from google.cloud import storage  # type: ignore
 
 @functions_framework.cloud_event
 def on_cloud_event(event: CloudEvent) -> None:
-    """Process a new document from an Eventarc event.
+    """Process a document event from an Eventarc event.
 
     Args:
         event: CloudEvent object.
     """
     try:
-        process_document(
-            event_id=event.data["id"],
-            input_bucket=event.data["bucket"],
-            filename=event.data["name"],
-            mime_type=event.data["contentType"],
-            time_uploaded=datetime.fromisoformat(event.data["timeCreated"]),
-            project=os.environ["PROJECT_ID"],
-            location=os.environ["LOCATION"],
-            docai_processor_id=os.environ["DOCAI_PROCESSOR"],
-            docai_location=os.environ.get("DOCAI_LOCATION", "us"),
-            output_bucket=os.environ["OUTPUT_BUCKET"],
-            bq_dataset=os.environ["BQ_DATASET"],
-            bq_table=os.environ["BQ_TABLE"],
-        )
+        event_type = event._attributes["type"]
+        if event_type == "google.cloud.storage.object.v1.finalized":
+            process_document(
+                event_id=event.data["id"],
+                input_bucket=event.data["bucket"],
+                filename=event.data["name"],
+                mime_type=event.data["contentType"],
+                time_uploaded=datetime.fromisoformat(event.data["timeCreated"]),
+                project=os.environ["PROJECT_ID"],
+                location=os.environ["LOCATION"],
+                docai_processor_id=os.environ["DOCAI_PROCESSOR"],
+                docai_location=os.environ.get("DOCAI_LOCATION", "us"),
+                output_bucket=os.environ["OUTPUT_BUCKET"],
+                bq_dataset=os.environ["BQ_DATASET"],
+                bq_table=os.environ["BQ_TABLE"],
+            )
+        elif event_type == "google.cloud.storage.object.v1.deleted":
+            delete_document(
+                event_id=event.data["id"],
+                input_bucket=event.data["bucket"],
+                filename=event.data["name"],
+                project=os.environ["PROJECT_ID"],
+                bq_dataset=os.environ["BQ_DATASET"],
+                bq_table=os.environ["BQ_TABLE"],
+            )
     except Exception as e:
         logging.exception(e, stack_info=True)
 
@@ -223,3 +234,37 @@ def write_to_bigquery(
             },
         ],
     )
+
+
+def delete_document(
+    event_id: str,
+    input_bucket: str,
+    filename: str,
+    project: str,
+    bq_dataset: str,
+    bq_table: str,
+) -> None:
+    """Delete a document summary from BigQuery when the source document is deleted.
+
+    Args:
+        event_id: ID of the event.
+        input_bucket: Name of the input bucket.
+        filename: Name of the deleted file.
+        project: Google Cloud project ID.
+        bq_dataset: Name of the BigQuery dataset.
+        bq_table: Name of the BigQuery table.
+    """
+    doc_path = f"gs://{input_bucket}/{filename}"
+    print(f"🗑️ {event_id}: Removing document summary from BigQuery: {project}.{bq_dataset}.{bq_table}")
+
+    bq_client = bigquery.Client(project=project)
+    query = f"""
+    DELETE FROM `{project}.{bq_dataset}.{bq_table}`
+    WHERE 'document_path' = '{doc_path}'
+    """
+    print(f"query: {query}")
+
+    query_job = bq_client.query(query)
+    query_job.result()  # Wait for the query to complete
+
+    print(f"✅ {event_id}: Document summary removal attempt finished for {doc_path}.")

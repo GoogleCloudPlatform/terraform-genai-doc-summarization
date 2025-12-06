@@ -179,6 +179,31 @@ resource "google_eventarc_trigger" "trigger" {
   }
 }
 
+#-- Eventarc trigger for deletion events --#
+resource "google_eventarc_trigger" "delete_trigger" {
+  project         = module.project_services.project_id
+  location        = var.region
+  name            = "${local.trigger_name}-delete"
+  service_account = google_service_account.trigger.email
+  labels          = var.labels
+
+  matching_criteria {
+    attribute = "type"
+    value     = "google.cloud.storage.object.v1.deleted"
+  }
+  matching_criteria {
+    attribute = "bucket"
+    value     = google_storage_bucket.docs.name
+  }
+
+  destination {
+    cloud_run_service {
+      service = google_cloudfunctions2_function.webhook.name
+      region  = var.region
+    }
+  }
+}
+
 resource "google_project_iam_member" "trigger" {
   project = module.project_services.project_id
   member  = google_service_account.trigger.member

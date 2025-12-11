@@ -36,6 +36,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/gen-ai-document-summarization/v0.2.0"
+    module_name = "blueprints/terraform/gen-ai-document-summarization/v0.3.0"
   }
 }

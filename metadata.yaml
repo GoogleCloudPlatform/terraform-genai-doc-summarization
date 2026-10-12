@@ -128,3 +128,6 @@ spec:
       - run.googleapis.com
       - serviceusage.googleapis.com
       - storage.googleapis.com
+permissions:
+  contents: read
+  id-token: write

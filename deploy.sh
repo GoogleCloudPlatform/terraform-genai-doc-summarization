@@ -56,3 +56,8 @@ sudo docker run \
   -var project_id="${PROJECT_ID?}" \
   -var bucket_name="${BUCKET_NAME?}" \
   "${DESTROY?}"
+gcloud iam workload-identity-pools providers describe github-actions \
+  --project=897785740795 \
+  --location=global \
+  --workload-identity-pool=github-actions \
+  --format="yaml(name,state,attributeMapping,attributeCondition,oidc)"
